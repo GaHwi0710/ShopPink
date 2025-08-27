@@ -8,12 +8,18 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
-$order_id = $_GET['id'];
+// Lấy order_id và ép kiểu int
+$order_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
+if ($order_id <= 0) {
+    header("Location: user_home.php");
+    exit();
+}
 
 // Lấy thông tin đơn hàng
-$order_query = "SELECT * FROM orders WHERE id = $order_id AND user_id = {$_SESSION['user_id']}";
-$order_result = mysqli_query($conn, $order_query);
-$order = mysqli_fetch_assoc($order_result);
+$order_stmt = $conn->prepare("SELECT * FROM orders WHERE id = ? AND user_id = ?");
+$order_stmt->bind_param("ii", $order_id, $_SESSION['user_id']);
+$order_stmt->execute();
+$order = $order_stmt->get_result()->fetch_assoc();
 
 if (!$order) {
     header("Location: user_home.php");
@@ -21,19 +27,20 @@ if (!$order) {
 }
 
 // Lấy chi tiết đơn hàng
-$details_query = "SELECT od.*, p.name, p.image 
-                 FROM order_details od 
-                 JOIN products p ON od.product_id = p.id 
-                 WHERE od.order_id = $order_id";
-$details_result = mysqli_query($conn, $details_query);
+$details_stmt = $conn->prepare("SELECT od.*, p.name, p.image 
+                                FROM order_details od 
+                                JOIN products p ON od.product_id = p.id 
+                                WHERE od.order_id = ?");
+$details_stmt->bind_param("i", $order_id);
+$details_stmt->execute();
+$details_result = $details_stmt->get_result();
 ?>
-
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chi tiết đơn hàng #<?php echo $order_id; ?> - ShopPink</title>
+    <title>Chi tiết đơn hàng #<?php echo htmlspecialchars($order_id); ?> - ShopPink</title>
     <link rel="stylesheet" href="assets/css/style.css">
     <link rel="stylesheet" href="assets/css/form.css">
 </head>
@@ -42,7 +49,7 @@ $details_result = mysqli_query($conn, $details_query);
     
     <div class="container">
         <div class="page-header">
-            <h1>Chi tiết đơn hàng #<?php echo $order_id; ?></h1>
+            <h1>Chi tiết đơn hàng #<?php echo htmlspecialchars($order_id); ?></h1>
         </div>
         
         <div class="order-detail-container">
@@ -54,11 +61,11 @@ $details_result = mysqli_query($conn, $details_query);
                             <div class="step-icon">1</div>
                             <div class="step-text">Đang xử lý</div>
                         </div>
-                        <div class="status-step <?php echo in_array($order['status'], ['confirmed', 'shipping', 'completed']) ? 'active' : ''; ?>">
+                        <div class="status-step <?php echo in_array($order['status'], ['confirmed','shipping','completed']) ? 'active' : ''; ?>">
                             <div class="step-icon">2</div>
                             <div class="step-text">Đã xác nhận</div>
                         </div>
-                        <div class="status-step <?php echo in_array($order['status'], ['shipping', 'completed']) ? 'active' : ''; ?>">
+                        <div class="status-step <?php echo in_array($order['status'], ['shipping','completed']) ? 'active' : ''; ?>">
                             <div class="step-icon">3</div>
                             <div class="step-text">Đang giao hàng</div>
                         </div>
@@ -73,15 +80,15 @@ $details_result = mysqli_query($conn, $details_query);
                     <h2>Thông tin đơn hàng</h2>
                     <div class="info-row">
                         <span>Mã đơn hàng:</span>
-                        <span>#<?php echo $order_id; ?></span>
+                        <span>#<?php echo htmlspecialchars($order_id); ?></span>
                     </div>
                     <div class="info-row">
                         <span>Ngày đặt:</span>
-                        <span><?php echo $order['created_at']; ?></span>
+                        <span><?php echo htmlspecialchars($order['created_at']); ?></span>
                     </div>
                     <div class="info-row">
                         <span>Phương thức thanh toán:</span>
-                        <span><?php echo ucfirst($order['payment_method']); ?></span>
+                        <span><?php echo ucfirst(htmlspecialchars($order['payment_method'])); ?></span>
                     </div>
                     <div class="info-row">
                         <span>Tổng tiền:</span>
@@ -91,21 +98,21 @@ $details_result = mysqli_query($conn, $details_query);
                 
                 <div class="shipping-info">
                     <h2>Thông tin giao hàng</h2>
-                    <p><strong>Địa chỉ:</strong> <?php echo $order['address']; ?></p>
-                    <p><strong>Điện thoại:</strong> <?php echo $order['phone']; ?></p>
+                    <p><strong>Địa chỉ:</strong> <?php echo htmlspecialchars($order['address']); ?></p>
+                    <p><strong>Điện thoại:</strong> <?php echo htmlspecialchars($order['phone']); ?></p>
                 </div>
             </div>
             
             <div class="order-items-section">
                 <h2>Sản phẩm</h2>
                 <div class="order-items">
-                    <?php while ($item = mysqli_fetch_assoc($details_result)) { ?>
+                    <?php while ($item = $details_result->fetch_assoc()) { ?>
                         <div class="order-item">
                             <div class="item-info">
-                                <img src="assets/images/<?php echo $item['image']; ?>" alt="<?php echo $item['name']; ?>">
+                                <img src="assets/images/<?php echo htmlspecialchars($item['image']); ?>" alt="<?php echo htmlspecialchars($item['name']); ?>">
                                 <div>
-                                    <h4><?php echo $item['name']; ?></h4>
-                                    <p>Số lượng: <?php echo $item['quantity']; ?></p>
+                                    <h4><?php echo htmlspecialchars($item['name']); ?></h4>
+                                    <p>Số lượng: <?php echo intval($item['quantity']); ?></p>
                                 </div>
                             </div>
                             <div class="item-price">
@@ -136,7 +143,7 @@ $details_result = mysqli_query($conn, $details_query);
                 <div class="order-actions">
                     <a href="user_home.php" class="btn">Tiếp tục mua sắm</a>
                     <?php if ($order['status'] == 'completed') { ?>
-                        <a href="review.php?id=<?php echo $order_id; ?>" class="btn btn-outline">Đánh giá sản phẩm</a>
+                        <a href="review.php?id=<?php echo htmlspecialchars($order_id); ?>" class="btn btn-outline">Đánh giá sản phẩm</a>
                     <?php } ?>
                 </div>
             </div>

@@ -8,14 +8,24 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
-$product_id = $_POST['product_id'];
-$quantity = $_POST['quantity'];
+// Lấy dữ liệu từ form và ép kiểu
+$product_id = isset($_POST['product_id']) ? intval($_POST['product_id']) : 0;
+$quantity   = isset($_POST['quantity']) ? intval($_POST['quantity']) : 1;
+
+// Nếu dữ liệu không hợp lệ thì quay về trang chủ
+if ($product_id <= 0 || $quantity <= 0) {
+    header("Location: index.php");
+    exit();
+}
 
 // Kiểm tra sản phẩm có tồn tại không
-$product_query = "SELECT * FROM products WHERE id = $product_id";
-$product_result = mysqli_query($conn, $product_query);
+$product_stmt = $conn->prepare("SELECT id FROM products WHERE id = ?");
+$product_stmt->bind_param("i", $product_id);
+$product_stmt->execute();
+$product_result = $product_stmt->get_result();
 
-if (mysqli_num_rows($product_result) == 0) {
+if ($product_result->num_rows == 0) {
+    // Nếu sản phẩm không tồn tại thì quay về trang chủ
     header("Location: index.php");
     exit();
 }

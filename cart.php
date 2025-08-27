@@ -14,17 +14,20 @@ $cart_items = array();
 $total = 0;
 
 if (!empty($cart)) {
+    $placeholders = implode(',', array_fill(0, count($cart), '?'));
+    $types = str_repeat('i', count($cart)); // tất cả là INT
     $product_ids = array_keys($cart);
-    $ids = implode(',', $product_ids);
+
+    $stmt = $conn->prepare("SELECT * FROM products WHERE id IN ($placeholders)");
+    $stmt->bind_param($types, ...$product_ids);
+    $stmt->execute();
+    $result = $stmt->get_result();
     
-    $sql = "SELECT * FROM products WHERE id IN ($ids)";
-    $result = mysqli_query($conn, $sql);
-    
-    while ($row = mysqli_fetch_assoc($result)) {
-        $quantity = $cart[$row['id']];
+    while ($row = $result->fetch_assoc()) {
+        $quantity = intval($cart[$row['id']]);
         $subtotal = $row['price'] * $quantity;
         $total += $subtotal;
-        
+
         $cart_items[] = array(
             'id' => $row['id'],
             'name' => $row['name'],
@@ -36,7 +39,6 @@ if (!empty($cart)) {
     }
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -75,9 +77,9 @@ if (!empty($cart)) {
                             <?php foreach ($cart_items as $item) { ?>
                                 <tr>
                                     <td class="product-info">
-                                        <img src="assets/images/<?php echo $item['image']; ?>" alt="<?php echo $item['name']; ?>">
+                                        <img src="assets/images/<?php echo htmlspecialchars($item['image']); ?>" alt="<?php echo htmlspecialchars($item['name']); ?>">
                                         <div>
-                                            <h3><?php echo $item['name']; ?></h3>
+                                            <h3><?php echo htmlspecialchars($item['name']); ?></h3>
                                         </div>
                                     </td>
                                     <td><?php echo number_format($item['price'], 0, ',', '.'); ?> VNĐ</td>
