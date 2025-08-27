@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShopPink - Mua sắm trực tuyến hàng đầu Việt Nam</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.theme.default.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div class="loading-screen" id="loading-screen">
+        <div class="spinner"></div>
+    </div>
+    
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <div class="top-header">
+                <div class="top-contact">
+                    <a href="tel:0123456789"><i class="fas fa-phone"></i> 0123 456 789</a>
+                    <a href="mailto:info@shoppink.com"><i class="fas fa-envelope"></i> info@shoppink.com</a>
+                </div>
+                <div class="top-links">
+                    <a href="pages/account.html"><i class="fas fa-user"></i> Tài khoản</a>
+                    <a href="#"><i class="fas fa-heart"></i> Yêu thích</a>
+                    <a href="pages/cart.html"><i class="fas fa-shopping-cart"></i> Giỏ hàng</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="container">
+            <div class="main-header">
+                <div class="logo">
+                    <i class="fas fa-shopping-bag"></i> ShopPink
+                </div>
+                
+                <div class="search-bar">
+                    <form>
+                        <input type="text" placeholder="Tìm kiếm sản phẩm..." id="search-input">
+                        <button type="submit"><i class="fas fa-search"></i> Tìm kiếm</button>
+                    </form>
+                    <div class="search-suggestions" id="search-suggestions">
+                        <a href="#"><i class="fas fa-search"></i> Áo thun nữ</a>
+                        <a href="#"><i class="fas fa-search"></i> Đầm dự tiệc</a>
+                        <a href="#"><i class="fas fa-search"></i> Giày cao gót</a>
+                        <a href="#"><i class="fas fa-search"></i> Túi xách hàng hiệu</a>
+                        <a href="#"><i class="fas fa-search"></i> Son môi</a>
+                    </div>
+                </div>
+                
+                <div class="user-actions">
+                    <a href="pages/login.html" id="login-btn"><i class="fas fa-user"></i> <span>Đăng nhập</span></a>
+                    <a href="#"><i class="fas fa-heart"></i> <span>Yêu thích</span></a>
+                    <a href="pages/cart.html"><i class="fas fa-shopping-cart"></i> <span>Giỏ hàng</span> <span class="cart-count">3</span></a>
+                </div>
+                
+                <button class="mobile-menu-toggle" id="mobile-menu-toggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+        </div>
+        
+        <nav>
+            <div class="container">
+                <div class="main-nav" id="main-nav">
+                    <a href="index.html"><i class="fas fa-home"></i> Trang chủ</a>
+                    
+                    <div class="category-menu">
+                        <a href="pages/category.html"><i class="fas fa-bars"></i> Danh mục sản phẩm</a>
+                        <div class="mega-menu">
+                            <div class="mega-menu-content">
+                                <div class="mega-menu-col">
+                                    <h4>Thời trang nữ</h4>
+                                    <a href="#">Áo thun</a>
+                                    <a href="#">Áo sơ mi</a>
+                                    <a href="#">Đầm/Váy</a>
+                                    <a href="#">Quần jeans</a>
+                                    <a href="#">Quần short</a>
+                                </div>
+                                <div class="mega-menu-col">
+                                    <h4>Thời trang nam</h4>
+                                    <a href="#">Áo thun</a>
+                                    <a href="#">Áo sơ mi</a>
+                                    <a href="#">Quần jeans</a>
+                                    <a href="#">Quần âu</a>
+                                    <a href="#">Áo khoác</a>
+                                </div>
+                                <div class="mega-menu-col">
+                                    <h4>Phụ kiện</h4>
+                                    <a href="#">Túi xách</a>
+                                    <a href="#">Ví</a>
+                                    <a href="#">Mắt kính</a>
+                                    <a href="#">Đồng hồ</a>
+                                    <a href="#">Thắt lưng</a>
+                                </div>
+                                <div class="mega-menu-col">
+                                    <h4>Làm đẹp</h4>
+                                    <a href="#">Son môi</a>
+                                    <a href="#">Kem dưỡng da</a>
+                                    <a href="#">Nước hoa</a>
+                                    <a href="#">Dụng cụ trang điểm</a>
+                                    <a href="#">Chăm sóc tóc</a>
+                                </div>
+                                <div class="mega-menu-col">
+                                    <h4>Giày dép</h4>
+                                    <a href="#">Giày cao gót</a>
+                                    <a href="#">Giày thể thao</a>
+                                    <a href="#">Sandal</a>
+                                    <a href="#">Dép</a>
+                                    <a href="#">Bốt</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <a href="#"><i class="fas fa-fire"></i> Sản phẩm hot</a>
+                    <a href="#"><i class="fas fa-percent"></i> Khuyến mãi</a>
+                    <a href="#"><i class="fas fa-gift"></i> Ưu đãi mới</a>
+                    <a href="#"><i class="fas fa-star"></i> Thương hiệu</a>
+                    <a href="#"><i class="fas fa-phone"></i> Liên hệ</a>
+                </div>
+            </div>
+        </nav>
+    </header>
+    
+    <!-- Hero Slider -->
+    <div class="container">
+        <div class="hero-slider">
+            <div class="slide active" style="background-image: url('https://via.placeholder.com/1200x500/f8bbd0/ffffff?text=Thời+Trang+Nữ');">
+                <div class="slide-content">
+                    <h2>Bộ sưu tập mùa hè 2025</h2>
+                    <p>Khám phá những xu hướng thời trang mới nhất với nhiều ưu đãi đặc biệt lên đến 50%.</p>
+                    <a href="pages/category.html" class="btn">Mua ngay</a>
+                </div>
+            </div>
+            <div class="slide" style="background-image: url('https://via.placeholder.com/1200x500/e91e63/ffffff?text=Giảm+Giá+Đặc+Biệt');">
+                <div class="slide-content">
+                    <h2>Giảm giá cuối mùa</h2>
+                    <p>Ưu đãi đặc biệt cho các sản phẩm cuối mùa với mức giá cực kỳ hấp dẫn.</p>
+                    <a href="pages/category.html" class="btn">Xem ngay</a>
+                </div>
+            </div>
+            <div class="slide" style="background-image: url('https://via.placeholder.com/1200x500/9c27b0/ffffff?text=Phụ+Kiện+Cao+Cấp');">
+                <div class="slide-content">
+                    <h2>Phụ kiện cao cấp</h2>
+                    <p>Làm mới phong cách của bạn với bộ sưu tập phụ kiện mới nhất từ các thương hiệu nổi tiếng.</p>
+                    <a href="pages/category.html" class="btn">Khám phá</a>
+                </div>
+            </div>
+            <div class="slider-nav">
+                <div class="slider-dot active"></div>
+                <div class="slider-dot"></div>
+                <div class="slider-dot"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Stats -->
+    <div class="container">
+        <div class="quick-stats animate-on-scroll">
+            <div class="stat-box">
+                <i class="fas fa-truck"></i>
+                <h3>Giao hàng miễn phí</h3>
+                <p>Cho đơn hàng từ 500.000đ</p>
+            </div>
+            <div class="stat-box">
+                <i class="fas fa-sync-alt"></i>
+                <h3>Đổi trả dễ dàng</h3>
+                <p>Trong vòng 30 ngày</p>
+            </div>
+            <div class="stat-box">
+                <i class="fas fa-shield-alt"></i>
+                <h3>Bảo mật thông tin</h3>
+                <p>Thanh toán an toàn</p>
+            </div>
+            <div class="stat-box">
+                <i class="fas fa-headset"></i>
+                <h3>Hỗ trợ 24/7</h3>
+                <p>Luôn sẵn sàng hỗ trợ</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Categories -->
+    <div class="container">
+        <h2 class="section-title animate-on-scroll">Danh mục sản phẩm</h2>
+        <div class="categories animate-on-scroll">
+            <a href="pages/category.html?cat=women" class="category">
+                <i class="fas fa-tshirt"></i>
+                <h3>Thời trang nữ</h3>
+            </a>
+            <a href="pages/category.html?cat=men" class="category">
+                <i class="fas fa-tshirt"></i>
+                <h3>Thời trang nam</h3>
+            </a>
+            <a href="pages/category.html?cat=shoes" class="category">
+                <i class="fas fa-shoe-prints"></i>
+                <h3>Giày dép</h3>
+            </a>
+            <a href="pages/category.html?cat=bags" class="category">
+                <i class="fas fa-handbag"></i>
+                <h3>Túi xách</h3>
+            </a>
+            <a href="pages/category.html?cat=jewelry" class="category">
+                <i class="fas fa-gem"></i>
+                <h3>Trang sức</h3>
+            </a>
+            <a href="pages/category.html?cat=phones" class="category">
+                <i class="fas fa-mobile-alt"></i>
+                <h3>Điện thoại</h3>
+            </a>
+        </div>
+    </div>
+    
+    <!-- Featured Products -->
+    <div class="container">
+        <h2 class="section-title animate-on-scroll">Sản phẩm nổi bật</h2>
+        <div class="products-grid animate-on-scroll" id="products-grid">
+            <div class="product" data-category="women" data-price="299000">
+                <div class="product-badge">Hot</div>
+                <a href="pages/product-detail.html?id=1" class="product-img" style="background-image: url('https://via.placeholder.com/300x300/f8bbd0/ffffff?text=Áo+Thun+Nữ');"></a>
+                <div class="product-actions">
+                    <button class="quick-view-btn" title="Xem nhanh"><i class="fas fa-search"></i></button>
+                    <button class="compare-btn" title="So sánh"><i class="fas fa-exchange-alt"></i></button>
+                    <button class="wishlist-btn" title="Yêu thích"><i class="far fa-heart"></i></button>
+                </div>
+                <div class="product-info">
+                    <div class="product-vendor">Thời trang nữ</div>
+                    <a href="pages/product-detail.html?id=1" class="product-title">Áo thun cổ tròn chất liệu cotton thoáng mát</a>
+                    <div class="product-price">
+                        <span class="current-price">299.000đ</span>
+                        <span class="old-price">399.000đ</span>
+                    </div>
+                    <div class="product-rating">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star-half-alt"></i>
+                        <span>(15 đánh giá)</span>
+                    </div>
+                    <div class="product-footer">
+                        <button class="add-to-cart">Thêm vào giỏ</button>
+                        <button class="wishlist-btn"><i class="far fa-heart"></i></button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="product" data-category="women" data-price="1299000">
+                <div class="product-badge new">Mới</div>
+                <a href="pages/product-detail.html?id=2" class="product-img" style="background-image: url('https://via.placeholder.com/300x300/e91e63/ffffff?text=Đầm+Dự+Tiệc');"></a>
+                <div class="product-actions">
+                    <button class="quick-view-btn" title="Xem nhanh"><i class="fas fa-search"></i></button>
+                    <button class="compare-btn" title="So sánh"><i class="fas fa-exchange-alt"></i></button>
+                    <button class="wishlist-btn" title="Yêu thích"><i class="far fa-heart"></i></button>
+                </div>
+                <div class="product-info">
+                    <div class="product-vendor">Thời trang nữ</div>
+                    <a href="pages/product-detail.html?id=2" class="product-title">Đầm dự tiệc sang trọng, thiết kế hiện đại</a>
+                    <div class="product-price">
+                        <span class="current-price">1.299.000đ</span>
+                    </div>
+                    <div class="product-rating">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <span>(28 đánh giá)</span>
+                    </div>
+                    <div class="product-footer">
+                        <button class="add-to-cart">Thêm vào giỏ</button>
+                        <button class="wishlist-btn"><i class="far fa-heart"></i></button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="product" data-category="accessories" data-price="799000">
+                <div class="product-badge sale">-20%</div>
+                <a href="pages/product-detail.html?id=3" class="product-img" style="background-image: url('https://via.placeholder.com/300x300/9c27b0/ffffff?text=Giày+Cao+Gót');"></a>
+                <div class="product-actions">
+                    <button class="quick-view-btn" title="Xem nhanh"><i class="fas fa-search"></i></button>
+                    <button class="compare-btn" title="So sánh"><i class="fas fa-exchange-alt"></i></button>
+                    <button class="wishlist-btn" title="Yêu thích"><i class="far fa-heart"></i></button>
+                </div>
+                <div class="product-info">
+                    <div class="product-vendor">Giày dép</div>
+                    <a href="pages/product-detail.html?id=3" class="product-title">Giày cao gót quai mảnh, chất liệu da cao cấp</a>
+                    <div class="product-price">
+                        <span class="current-price">799.000đ</span>
+                        <span class="old-price">999.000đ</span>
+                    </div>
+                    <div class="product-rating">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="far fa-star"></i>
+                        <span>(10 đánh giá)</span>
+                    </div>
+                    <div class="product-footer">
+                        <button class="add-to-cart">Thêm vào giỏ</button>
+                        <button class="wishlist-btn"><i class="far fa-heart"></i></button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="product" data-category="accessories" data-price="1599000">
+                <a href="pages/product-detail.html?id=4" class="product-img" style="background-image: url('https://via.placeholder.com/300x300/673ab7/ffffff?text=Túi+Xách');"></a>
+                <div class="product-actions">
+                    <button class="quick-view-btn" title="Xem nhanh"><i class="fas fa-search"></i></button>
+                    <button class="compare-btn" title="So sánh"><i class="fas fa-exchange-alt"></i></button>
+                    <button class="wishlist-btn" title="Yêu thích"><i class="far fa-heart"></i></button>
+                </div>
+                <div class="product-info">
+                    <div class="product-vendor">Túi xách</div>
+                    <a href="pages/product-detail.html?id=4" class="product-title">Túi xách da thật, thiết kế trẻ trung, đa năng</a>
+                    <div class="product-price">
+                        <span class="current-price">1.599.000đ</span>
+                    </div>
+                    <div class="product-rating">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star-half-alt"></i>
+                        <span>(32 đánh giá)</span>
+                    </div>
+                    <div class="product-footer">
+                        <button class="add-to-cart">Thêm vào giỏ</button>
+                        <button class="wishlist-btn"><i class="far fa-heart"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Brands Slider -->
+    <div class="container">
+        <h2 class="section-title animate-on-scroll">Thương hiệu nổi bật</h2>
+        <div class="brands-slider owl-carousel animate-on-scroll">
+            <div class="brand-item">
+                <img src="https://via.placeholder.com/150x80/f8bbd0/ffffff?text=Brand+1" alt="Brand 1">
+            </div>
+            <div class="brand-item">
+                <img src="https://via.placeholder.com/150x80/e91e63/ffffff?text=Brand+2" alt="Brand 2">
+            </div>
+            <div class="brand-item">
+                <img src="https://via.placeholder.com/150x80/9c27b0/ffffff?text=Brand+3" alt="Brand 3">
+            </div>
+            <div class="brand-item">
+                <img src="https://via.placeholder.com/150x80/673ab7/ffffff?text=Brand+4" alt="Brand 4">
+            </div>
+            <div class="brand-item">
+                <img src="https://via.placeholder.com/150x80/3f51b5/ffffff?text=Brand+5" alt="Brand 5">
+            </div>
+            <div class="brand-item">
+                <img src="https://via.placeholder.com/150x80/2196f3/ffffff?text=Brand+6" alt="Brand 6">
+            </div>
+        </div>
+    </div>
+    
+    <!-- Newsletter -->
+    <div class="container">
+        <div class="newsletter animate-on-scroll">
+            <h2>Đăng ký nhận thông tin</h2>
+            <p>Hãy đăng ký để nhận thông tin về các sản phẩm mới và chương trình khuyến mãi đặc biệt từ chúng tôi.</p>
+            <form class="newsletter-form">
+                <input type="email" placeholder="Email của bạn...">
+                <button type="submit">Đăng ký</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-column">
+                    <h3>Về ShopPink</h3>
+                    <p>ShopPink là cửa hàng thời trang uy tín, chuyên cung cấp các sản phẩm chất lượng với giá thành hợp lý.</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+                <div class="footer-column">
+                    <h3>Thông tin</h3>
+                    <ul>
+                        <li><a href="#">Về chúng tôi</a></li>
+                        <li><a href="#">Dịch vụ</a></li>
+                        <li><a href="#">Chính sách bảo mật</a></li>
+                        <li><a href="#">Điều khoản sử dụng</a></li>
+                        <li><a href="#">Hệ thống cửa hàng</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Hỗ trợ khách hàng</h3>
+                    <ul>
+                        <li><a href="#">Hướng dẫn mua hàng</a></li>
+                        <li><a href="#">Chính sách đổi trả</a></li>
+                        <li><a href="#">Phương thức vận chuyển</a></li>
+                        <li><a href="#">Phương thức thanh toán</a></li>
+                        <li><a href="#">Câu hỏi thường gặp</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Liên hệ</h3>
+                    <ul class="contact-info">
+                        <li>
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>Hà Nội</span>
+                        </li>
+                        <li>
+                            <i class="fas fa-phone"></i>
+                            <span>0123 456 789</span>
+                        </li>
+                        <li>
+                            <i class="fas fa-envelope"></i>
+                            <span>info@shoppink.com</span>
+                        </li>
+                        <li>
+                            <i class="fas fa-clock"></i>
+                            <span>Thứ 2 - Chủ nhật: 8:00 - 22:00</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="copyright">
+                <p>&copy; 2025 ShopPink.</p>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- Back to Top -->
+    <div class="back-to-top" id="back-to-top">
+        <i class="fas fa-arrow-up"></i>
+    </div>
+    
+    <!-- Dark Mode Toggle -->
+    <div class="dark-mode-toggle" id="dark-mode-toggle">
+        <i class="fas fa-moon"></i>
+    </div>
+    
+    <!-- Quick View Modal -->
+    <div class="quick-view-modal" id="quick-view-modal">
+        <div class="quick-view-content">
+            <span class="quick-view-close" id="quick-view-close">&times;</span>
+            <div class="quick-view-body">
+                <div class="quick-view-image">
+                    <img src="https://via.placeholder.com/400x400/f8bbd0/ffffff?text=Product+Image" alt="Product Image">
+                </div>
+                <div class="quick-view-details">
+                    <h3 class="quick-view-title">Tên sản phẩm</h3>
+                    <div class="quick-view-price">299.000đ</div>
+                    <div class="quick-view-description">
+                        Mô tả chi tiết về sản phẩm. Chất liệu cao cấp, thiết kế hiện đại, phù hợp với nhiều phong cách khác nhau.
+                    </div>
+                    
+                    <!-- Product Variants -->
+                    <div class="product-variants">
+                        <div class="variant-title">Màu sắc:</div>
+                        <div class="variant-options">
+                            <div class="variant-option active">Đen</div>
+                            <div class="variant-option">Trắng</div>
+                            <div class="variant-option">Xanh</div>
+                        </div>
+                    </div>
+                    
+                    <div class="product-variants">
+                        <div class="variant-title">Kích thước:</div>
+                        <div class="variant-options">
+                            <div class="variant-option">S</div>
+                            <div class="variant-option active">M</div>
+                            <div class="variant-option">L</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Stock Status -->
+                    <div class="stock-status">
+                        <div class="stock-indicator in-stock"></div>
+                        <div class="stock-text">Còn hàng</div>
+                    </div>
+                    
+                    <!-- Countdown Timer -->
+                    <div class="countdown-timer">
+                        <div class="countdown-item">
+                            <div class="countdown-value">12</div>
+                            <div class="countdown-label">Giờ</div>
+                        </div>
+                        <div class="countdown-item">
+                            <div class="countdown-value">34</div>
+                            <div class="countdown-label">Phút</div>
+                        </div>
+                        <div class="countdown-item">
+                            <div class="countdown-value">56</div>
+                            <div class="countdown-label">Giây</div>
+                        </div>
+                    </div>
+                    
+                    <div class="quick-view-actions">
+                        <div class="quick-view-quantity">
+                            <button id="decrease-quantity">-</button>
+                            <input type="number" id="quantity" value="1" min="1" max="10">
+                            <button id="increase-quantity">+</button>
+                        </div>
+                        <button class="btn-primary" id="add-to-cart-quick-view">Thêm vào giỏ hàng</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Compare Modal -->
+    <div class="compare-modal" id="compare-modal">
+        <div class="compare-content">
+            <div class="compare-header">
+                <h2>So sánh sản phẩm</h2>
+                <span class="compare-close" id="compare-close">&times;</span>
+            </div>
+            <div class="compare-body" id="compare-body">
+                <p style="text-align: center; padding: 50px; color: var(--gray);">Chưa có sản phẩm nào để so sánh</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Toast Container -->
+    <div class="toast-container" id="toast-container"></div>
+    
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
+    <script src="js/components.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
