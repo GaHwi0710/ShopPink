@@ -1,6 +1,5 @@
 <?php
-session_start();
-include('includes/config.php');
+require_once 'includes/autoload.php';
 // Nếu giỏ hàng chưa có, tạo mảng rỗng
 if (!isset($_SESSION['cart'])) {
     $_SESSION['cart'] = [];

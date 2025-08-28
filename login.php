@@ -1,6 +1,5 @@
 <?php
-session_start();
-include('includes/config.php');
+require_once 'includes/autoload.php';
 
 // Nếu người dùng đã đăng nhập, chuyển hướng đến trang chủ
 if (isset($_SESSION['user_id'])) {

@@ -1,6 +1,5 @@
 <?php
-session_start();
-include('includes/config.php');
+require_once 'includes/autoload.php';
 $product_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 if ($product_id <= 0) {
     header("Location: index.php");

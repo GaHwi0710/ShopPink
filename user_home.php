@@ -1,6 +1,5 @@
 <?php
-session_start();
-include('includes/config.php');
+require_once 'includes/autoload.php';
 // Kiểm tra đăng nhập
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");

@@ -76,11 +76,12 @@ function getFeaturedProducts($limit = 8) {
 // Hàm lấy sản phẩm bán chạy
 function getBestsellerProducts($limit = 8) {
     $conn = connectDB();
-    $sql = "SELECT p.*, c.name as category_name, SUM(od.quantity) as total_sold
+    $sql = "SELECT p.*, c.name as category_name, COALESCE(SUM(od.quantity), 0) as total_sold
             FROM products p 
             LEFT JOIN categories c ON p.category_id = c.id 
             LEFT JOIN order_details od ON p.id = od.product_id
-            GROUP BY p.id
+            WHERE p.status = 1
+            GROUP BY p.id, p.name, p.price, p.image, p.description, p.category_id, p.created_at, p.updated_at, c.name
             ORDER BY total_sold DESC 
             LIMIT ?";
     $stmt = $conn->prepare($sql);
@@ -104,9 +105,21 @@ function getRecentlyViewedProducts($limit = 6) {
     
     $conn = connectDB();
     $product_ids = array_slice($_SESSION['recently_viewed'], -$limit);
-    $ids = implode(',', $product_ids);
-    $sql = "SELECT * FROM products WHERE id IN ($ids) ORDER BY FIELD(id, $ids)";
-    $result = $conn->query($sql);
+    
+    if (empty($product_ids)) {
+        return [];
+    }
+    
+    // Sử dụng prepared statement để tránh SQL injection
+    $placeholders = str_repeat('?,', count($product_ids) - 1) . '?';
+    $sql = "SELECT * FROM products WHERE id IN ($placeholders) AND status = 1";
+    $stmt = $conn->prepare($sql);
+    
+    // Tạo types string cho bind_param
+    $types = str_repeat('i', count($product_ids));
+    $stmt->bind_param($types, ...$product_ids);
+    $stmt->execute();
+    $result = $stmt->get_result();
     
     $products = [];
     while ($row = $result->fetch_assoc()) {
@@ -162,17 +175,15 @@ function getProductsByCategory($category_id, $limit = null) {
     $sql = "SELECT p.*, c.name as category_name 
             FROM products p 
             JOIN categories c ON p.category_id = c.id 
-            WHERE p.category_id = ?";
+            WHERE p.category_id = ? AND p.status = 1";
     
     if ($limit) {
         $sql .= " LIMIT ?";
-    }
-    
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("i", $category_id);
-    
-    if ($limit) {
-        $stmt->bind_param("i", $limit);
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("ii", $category_id, $limit);
+    } else {
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("i", $category_id);
     }
     
     $stmt->execute();

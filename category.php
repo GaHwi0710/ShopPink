@@ -1,6 +1,5 @@
 <?php
-session_start();
-include('includes/config.php');
+require_once 'includes/autoload.php';
 // Lấy id danh mục
 $category_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 if ($category_id <= 0) {
@@ -8,9 +7,11 @@ if ($category_id <= 0) {
     exit();
 }
 // Lấy thông tin danh mục
-$category_query = "SELECT * FROM categories WHERE id = $category_id";
-$category_result = mysqli_query($conn, $category_query);
-$category = mysqli_fetch_assoc($category_result);
+$category_stmt = $conn->prepare("SELECT * FROM categories WHERE id = ?");
+$category_stmt->bind_param("i", $category_id);
+$category_stmt->execute();
+$category_result = $category_stmt->get_result();
+$category = $category_result->fetch_assoc();
 if (!$category) {
     include('includes/header.php');
     echo "<div class='container'><h2>❌ Danh mục không tồn tại</h2></div>";
@@ -20,13 +21,17 @@ if (!$category) {
 // Breadcrumb (danh mục cha nếu có)
 $parent_category = null;
 if ($category['parent_id'] > 0) {
-    $parent_query = "SELECT * FROM categories WHERE id = " . intval($category['parent_id']);
-    $parent_result = mysqli_query($conn, $parent_query);
-    $parent_category = mysqli_fetch_assoc($parent_result);
+    $parent_stmt = $conn->prepare("SELECT * FROM categories WHERE id = ?");
+    $parent_stmt->bind_param("i", $category['parent_id']);
+    $parent_stmt->execute();
+    $parent_result = $parent_stmt->get_result();
+    $parent_category = $parent_result->fetch_assoc();
 }
 // Lấy danh mục con
-$sub_query = "SELECT * FROM categories WHERE parent_id = $category_id";
-$sub_result = mysqli_query($conn, $sub_query);
+$sub_stmt = $conn->prepare("SELECT * FROM categories WHERE parent_id = ?");
+$sub_stmt->bind_param("i", $category_id);
+$sub_stmt->execute();
+$sub_result = $sub_stmt->get_result();
 
 // Xử lý lọc và sắp xếp
 $where_conditions = "(p.category_id = $category_id OR c.parent_id = $category_id)";

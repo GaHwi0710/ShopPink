@@ -1,6 +1,5 @@
 <?php
-session_start();
-include('includes/config.php');
+require_once 'includes/autoload.php';
 $query = trim($_GET['query'] ?? '');
 // Nếu từ khóa trống
 if ($query === '') {
