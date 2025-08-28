@@ -29,7 +29,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 </div>
                 <div class="info-text">
                     <h3>Địa chỉ</h3>
-                    <p>123 Nguyễn Huệ, Quận 1, TP. Hồ Chí Minh</p>
+                    <p>Hà Nội</p>
                 </div>
             </div>
             
@@ -39,7 +39,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 </div>
                 <div class="info-text">
                     <h3>Điện thoại</h3>
-                    <p>(028) 1234 5678</p>
+                    <p>0123456789</p>
                 </div>
             </div>
             

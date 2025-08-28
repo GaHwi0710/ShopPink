@@ -121,8 +121,8 @@ include('includes/header.php');
             <p>Nếu bạn có bất kỳ câu hỏi hoặc thắc mắc nào về chính sách vận chuyển, vui lòng liên hệ với chúng tôi qua:</p>
             <ul>
                 <li>Email: shipping@shoppink.com</li>
-                <li>Điện thoại: (028) 1234 5678</li>
-                <li>Địa chỉ: 123 Nguyễn Huệ, Quận 1, TP. Hồ Chí Minh</li>
+                <li>Điện thoại: 0123456789</li>
+                <li>Địa Chỉ: Hà Nội</li>
             </ul>
         </div>
     </div>

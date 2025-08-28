@@ -1,4 +1,113 @@
 RewriteEngine On
+RewriteBase /ShopPink/
+
+# Bảo vệ file quan trọng
+<FilesMatch "^(config|functions)\.php$">
+    Require all denied
+</FilesMatch>
+<Files .htaccess>
+    Require all denied
+</Files>
+
+# Enable gzip compression
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/plain
+    AddOutputFilterByType DEFLATE text/html
+    AddOutputFilterByType DEFLATE text/xml
+    AddOutputFilterByType DEFLATE text/css
+    AddOutputFilterByType DEFLATE application/xml
+    AddOutputFilterByType DEFLATE application/xhtml+xml
+    AddOutputFilterByType DEFLATE application/rss+xml
+    AddOutputFilterByType DEFLATE application/javascript
+    AddOutputFilterByType DEFLATE application/x-javascript
+</IfModule>
+
+# Set cache control headers
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType text/css "access plus 1 year"
+    ExpiresByType application/javascript "access plus 1 year"
+    ExpiresByType image/jpg "access plus 1 year"
+    ExpiresByType image/jpeg "access plus 1 year"
+    ExpiresByType image/gif "access plus 1 year"
+    ExpiresByType image/png "access plus 1 year"
+    ExpiresByType image/x-icon "access plus 1 year"
+</IfModule>
+
+# Enable CORS
+<IfModule mod_headers.c>
+    Header set Access-Control-Allow-Origin "*"
+</IfModule>
+
+# Security headers
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set X-XSS-Protection "1; mode=block"
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# Disable directory listing
+Options -Indexes
+
+# Clean URLs cho sản phẩm
+RewriteRule ^product/([0-9]+)/([a-zA-Z0-9-]+)$ product_detail.php?id=$1&slug=$2 [QSA,L]
+
+# Clean URLs cho danh mục
+RewriteRule ^category/([0-9]+)/([a-zA-Z0-9-]+)$ category.php?id=$1&slug=$2 [QSA,L]
+RewriteRule ^category/([a-zA-Z0-9-]+)$ category.php?slug=$1 [QSA,L]
+
+# Clean URLs cho tìm kiếm
+RewriteRule ^search/([a-zA-Z0-9-]+)$ search.php?query=$1 [QSA,L]
+RewriteRule ^search$ search.php [QSA,L]
+
+# Clean URLs cho user pages
+RewriteRule ^user/([a-zA-Z0-9-]+)$ user_$1.php [QSA,L]
+
+# Clean URLs cho đơn hàng
+RewriteRule ^order/([0-9]+)$ order_detail.php?id=$1 [QSA,L]
+RewriteRule ^orders$ order_history.php [QSA,L]
+
+# Clean URLs cho trang tĩnh
+RewriteRule ^about$ pages/about.php [QSA,L]
+RewriteRule ^contact$ pages/contact.php [QSA,L]
+RewriteRule ^faq$ pages/faq.php [QSA,L]
+RewriteRule ^terms$ pages/terms.php [QSA,L]
+RewriteRule ^privacy$ pages/privacy.php [QSA,L]
+RewriteRule ^shipping-policy$ pages/shipping-policy.php [QSA,L]
+
+# Clean URLs cho giỏ hàng
+RewriteRule ^cart$ cart.php [QSA,L]
+RewriteRule ^checkout$ checkout.php [QSA,L]
+
+# Clean URLs cho đăng nhập/đăng ký
+RewriteRule ^login$ login.php [QSA,L]
+RewriteRule ^register$ register.php [QSA,L]
+RewriteRule ^logout$ logout.php [QSA,L]
+
+# Clean URLs cho tài khoản
+RewriteRule ^account$ user_home.php [QSA,L]
+RewriteRule ^profile$ user_profile.php [QSA,L]
+
+# Clean URLs cho wishlist
+RewriteRule ^wishlist$ user_wishlist.php [QSA,L]
+
+# Clean URLs cho AJAX endpoints
+RewriteRule ^api/([a-zA-Z0-9-]+)$ api/$1.php [QSA,L]
+
+# Xử lý request không tồn tại
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^(.*)$ index.php?url=$1 [QSA,L]
+
+# Handle 404 errors
+ErrorDocument 404 /404.php
+
+# Redirect HTTP to HTTPS
+# Uncomment the following lines if you have SSL enabled
+# RewriteCond %{HTTPS} off
+# RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# Remove www from URL
+RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
+RewriteRule ^ https://%1%{REQUEST_URI} [L,R=301]

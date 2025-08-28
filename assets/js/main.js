@@ -1,194 +1,203 @@
-// JavaScript chính cho ShopPink
-
+// ==========================
+//  MAIN JAVASCRIPT SHOPPINK
+// ==========================
 document.addEventListener('DOMContentLoaded', function() {
-    // Xử lý dropdown menu
-    const dropdowns = document.querySelectorAll('.dropdown');
-    
-    dropdowns.forEach(dropdown => {
-        const trigger = dropdown.querySelector('.dropdown-trigger');
-        
-        if (trigger) {
-            trigger.addEventListener('click', function(e) {
+    /* =====================
+       DROPDOWN MENU
+    ===================== */
+    const dropdownTriggers = document.querySelectorAll('.main-nav li > a');
+    dropdownTriggers.forEach(trigger => {
+        trigger.addEventListener('click', function (e) {
+            const parentLi = this.parentElement;
+            if (parentLi.querySelector('.dropdown')) {
                 e.preventDefault();
-                dropdown.classList.toggle('active');
-            });
-        }
-    });
-    
-    // Đóng dropdown khi click bên ngoài
-    document.addEventListener('click', function(e) {
-        dropdowns.forEach(dropdown => {
-            if (!dropdown.contains(e.target)) {
-                dropdown.classList.remove('active');
+                parentLi.classList.toggle('active');
             }
         });
     });
-    
-    // Xử lý carousel trên trang chủ
+    document.addEventListener('click', function (e) {
+        dropdownTriggers.forEach(trigger => {
+            const parentLi = trigger.parentElement;
+            if (!parentLi.contains(e.target)) {
+                parentLi.classList.remove('active');
+            }
+        });
+    });
+    /* =====================
+       BANNER CAROUSEL
+    ===================== */
     const carousel = document.querySelector('.banner-carousel');
     if (carousel) {
         const slides = carousel.querySelectorAll('.banner-slide');
-        const prevBtn = carousel.querySelector('.carousel-prev');
-        const nextBtn = carousel.querySelector('.carousel-next');
         let currentSlide = 0;
-        
         function showSlide(index) {
             slides.forEach(slide => slide.classList.remove('active'));
             slides[index].classList.add('active');
             currentSlide = index;
         }
-        
-        if (prevBtn) {
-            prevBtn.addEventListener('click', function() {
-                currentSlide = (currentSlide - 1 + slides.length) % slides.length;
-                showSlide(currentSlide);
-            });
-        }
-        
-        if (nextBtn) {
-            nextBtn.addEventListener('click', function() {
-                currentSlide = (currentSlide + 1) % slides.length;
-                showSlide(currentSlide);
-            });
-        }
-        
-        // Tự động chuyển slide
-        setInterval(function() {
+        setInterval(() => {
             currentSlide = (currentSlide + 1) % slides.length;
             showSlide(currentSlide);
         }, 5000);
     }
-    
-    // Xử lý tăng/giảm số lượng
+    /* =====================
+       QUANTITY CONTROL
+    ===================== */
     const quantityControls = document.querySelectorAll('.quantity-control');
-    
     quantityControls.forEach(control => {
-        const decreaseBtn = control.querySelector('a:first-child');
-        const increaseBtn = control.querySelector('a:last-child');
-        const quantityInput = control.querySelector('input');
-        
-        if (decreaseBtn && quantityInput) {
-            decreaseBtn.addEventListener('click', function(e) {
+        const minusBtn = control.querySelector('.decrease');
+        const plusBtn = control.querySelector('.increase');
+        const input = control.querySelector('input');
+        if (minusBtn) {
+            minusBtn.addEventListener('click', function (e) {
                 e.preventDefault();
-                let value = parseInt(quantityInput.value);
-                if (value > 1) {
-                    quantityInput.value = value - 1;
-                }
+                let value = parseInt(input.value) || 1;
+                if (value > 1) input.value = value - 1;
             });
         }
-        
-        if (increaseBtn && quantityInput) {
-            increaseBtn.addEventListener('click', function(e) {
+        if (plusBtn) {
+            plusBtn.addEventListener('click', function (e) {
                 e.preventDefault();
-                let value = parseInt(quantityInput.value);
-                quantityInput.value = value + 1;
+                let value = parseInt(input.value) || 1;
+                input.value = value + 1;
             });
         }
     });
-    
-    // Xử lý tabs
-    const tabs = document.querySelectorAll('.tabs');
-    
-    tabs.forEach(tabContainer => {
-        const tabTriggers = tabContainer.querySelectorAll('.tab-trigger');
-        const tabContents = tabContainer.querySelectorAll('.tab-content');
-        
-        tabTriggers.forEach(trigger => {
-            trigger.addEventListener('click', function() {
+    /* =====================
+       TABS
+    ===================== */
+    const tabContainers = document.querySelectorAll('.tabs');
+    tabContainers.forEach(container => {
+        const triggers = container.querySelectorAll('.tab-trigger');
+        const contents = container.querySelectorAll('.tab');
+        triggers.forEach(trigger => {
+            trigger.addEventListener('click', function () {
                 const tabId = this.getAttribute('data-tab');
-                
-                tabTriggers.forEach(t => t.classList.remove('active'));
-                tabContents.forEach(c => c.classList.remove('active'));
-                
+                triggers.forEach(t => t.classList.remove('active'));
+                contents.forEach(c => c.classList.remove('active'));
                 this.classList.add('active');
-                document.getElementById(tabId).classList.add('active');
+                const target = container.querySelector(`#${tabId}`);
+                if (target) target.classList.add('active');
             });
         });
     });
-    
-    // Xử lý modal
+    /* =====================
+       MODALS
+    ===================== */
     const modals = document.querySelectorAll('.modal');
-    
     modals.forEach(modal => {
         const closeBtn = modal.querySelector('.modal-close');
-        
         if (closeBtn) {
-            closeBtn.addEventListener('click', function() {
+            closeBtn.addEventListener('click', () => {
                 modal.classList.remove('active');
             });
         }
-        
-        modal.addEventListener('click', function(e) {
+        modal.addEventListener('click', function (e) {
             if (e.target === modal) {
                 modal.classList.remove('active');
             }
         });
     });
-    
-    // Xử lý form validation
+    /* =====================
+       FORM VALIDATION
+    ===================== */
     const forms = document.querySelectorAll('.needs-validation');
-    
     forms.forEach(form => {
-        form.addEventListener('submit', function(event) {
+        form.addEventListener('submit', function (event) {
             if (!form.checkValidity()) {
                 event.preventDefault();
                 event.stopPropagation();
             }
-            
             form.classList.add('was-validated');
         }, false);
     });
-    
-    // Xử lý ảnh preview
-    const imageInputs = document.querySelectorAll('input[type="file"][data-preview]');
-    
-    imageInputs.forEach(input => {
-        input.addEventListener('change', function() {
+    /* =====================
+       IMAGE PREVIEW
+    ===================== */
+    const fileInputs = document.querySelectorAll('input[type="file"][data-preview]');
+    fileInputs.forEach(input => {
+        input.addEventListener('change', function () {
             const previewId = this.getAttribute('data-preview');
-            const preview = document.getElementById(previewId);
-            
-            if (preview && this.files && this.files[0]) {
+            const previewEl = document.getElementById(previewId);
+            if (previewEl && this.files && this.files[0]) {
                 const reader = new FileReader();
-                
-                reader.onload = function(e) {
-                    preview.src = e.target.result;
-                };
-                
+                reader.onload = e => { previewEl.src = e.target.result; };
                 reader.readAsDataURL(this.files[0]);
             }
         });
     });
-    
-    // Xử lý back to top button
-    const backToTopBtn = document.querySelector('.back-to-top');
-    
-    if (backToTopBtn) {
-        window.addEventListener('scroll', function() {
-            if (window.pageYOffset > 300) {
-                backToTopBtn.classList.add('active');
+    /* =====================
+       BACK TO TOP
+    ===================== */
+    const backToTop = document.querySelector('.back-to-top');
+    if (backToTop) {
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 300) {
+                backToTop.classList.add('active');
             } else {
-                backToTopBtn.classList.remove('active');
+                backToTop.classList.remove('active');
             }
         });
-        
-        backToTopBtn.addEventListener('click', function() {
-            window.scrollTo({
-                top: 0,
-                behavior: 'smooth'
-            });
+        backToTop.addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         });
     }
-    
-    // Xử lý sticky header
+    /* =====================
+       STICKY HEADER
+    ===================== */
     const header = document.querySelector('header');
-    
     if (header) {
-        window.addEventListener('scroll', function() {
-            if (window.pageYOffset > 100) {
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 100) {
                 header.classList.add('sticky');
             } else {
                 header.classList.remove('sticky');
             }
         });
     }
+    /* =====================
+       AJAX SEARCH SUGGESTIONS
+    ===================== */
+    const searchInput = document.getElementById('search-input');
+    const suggestionsBox = document.getElementById('search-suggestions');
+    if (searchInput && suggestionsBox) {
+        searchInput.addEventListener('keyup', function () {
+            const query = this.value.trim();
+            if (query.length < 2) {
+                suggestionsBox.innerHTML = '';
+                suggestionsBox.style.display = 'none';
+                return;
+            }
+            fetch('search_suggestions.php?q=' + encodeURIComponent(query))
+                .then(response => response.text())
+                .then(data => {
+                    suggestionsBox.innerHTML = data;
+                    suggestionsBox.style.display = 'block';
+                });
+        });
+        // Ẩn khi click ra ngoài
+        document.addEventListener('click', function (e) {
+            if (!searchInput.contains(e.target) && !suggestionsBox.contains(e.target)) {
+                suggestionsBox.style.display = 'none';
+            }
+        });
+    }
 });
+/* =====================
+   SCROLL ANIMATIONS
+===================== */
+const animatedEls = document.querySelectorAll('.animate');
+if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('show');
+                observer.unobserve(entry.target); // chỉ chạy 1 lần
+            }
+        });
+    }, { threshold: 0.1 });
+    animatedEls.forEach(el => observer.observe(el));
+} else {
+    // fallback: hiện tất cả nếu trình duyệt cũ
+    animatedEls.forEach(el => el.classList.add('show'));
+}

@@ -1,128 +1,214 @@
 <?php
 session_start();
-include('config.php');
-
-// Kiểm tra đăng nhập
-if (!isset($_SESSION['user_id'])) {
-    header("Location: login.php");
-    exit();
+include('includes/config.php');
+// Nếu giỏ hàng chưa có, tạo mảng rỗng
+if (!isset($_SESSION['cart'])) {
+    $_SESSION['cart'] = [];
 }
-
-// Lấy thông tin giỏ hàng từ session
-$cart = isset($_SESSION['cart']) ? $_SESSION['cart'] : array();
-$cart_items = array();
-$total = 0;
-
-if (!empty($cart)) {
-    $placeholders = implode(',', array_fill(0, count($cart), '?'));
-    $types = str_repeat('i', count($cart)); // tất cả là INT
-    $product_ids = array_keys($cart);
-
-    $stmt = $conn->prepare("SELECT * FROM products WHERE id IN ($placeholders)");
-    $stmt->bind_param($types, ...$product_ids);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    
-    while ($row = $result->fetch_assoc()) {
-        $quantity = intval($cart[$row['id']]);
-        $subtotal = $row['price'] * $quantity;
-        $total += $subtotal;
-
-        $cart_items[] = array(
-            'id' => $row['id'],
-            'name' => $row['name'],
-            'price' => $row['price'],
-            'image' => $row['image'],
-            'quantity' => $quantity,
-            'subtotal' => $subtotal
-        );
-    }
+$cart = $_SESSION['cart'];
+$subtotal = 0;
+$shipping_fee = 30000; // Phí vận chuyển cố định
+foreach ($cart as $item) {
+    $subtotal += $item['price'] * $item['quantity'];
+}
+$total = $subtotal + $shipping_fee;
+// Miễn phí vận chuyển cho đơn hàng từ 500.000đ
+if ($subtotal >= 500000) {
+    $shipping_fee = 0;
+    $total = $subtotal;
 }
 ?>
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Giỏ hàng - ShopPink</title>
-    <link rel="stylesheet" href="assets/css/style.css">
-    <link rel="stylesheet" href="assets/css/form.css">
-</head>
-<body>
-    <?php include('includes/header.php'); ?>
+<?php include('includes/header.php'); ?>
+
+<div class="container">
+    <h1 class="section-title">Giỏ hàng của bạn</h1>
     
-    <div class="container">
-        <h1>Giỏ hàng của bạn</h1>
-        
-        <?php if (empty($cart_items)) { ?>
-            <div class="empty-cart">
-                <img src="assets/images/empty-cart.png" alt="Giỏ hàng trống">
-                <p>Giỏ hàng của bạn đang trống</p>
-                <a href="index.php" class="btn">Tiếp tục mua sắm</a>
-            </div>
-        <?php } else { ?>
-            <div class="cart-container">
-                <div class="cart-items">
-                    <table>
-                        <thead>
+    <?php if (empty($cart)): ?>
+        <div class="empty-cart animate-on-scroll">
+            <img src="assets/images/empty-cart.png" alt="Giỏ hàng trống">
+            <h3>Giỏ hàng của bạn đang trống</h3>
+            <p>Hãy thêm sản phẩm vào giỏ hàng để tiếp tục mua sắm</p>
+            <a href="index.php" class="btn">Tiếp tục mua sắm</a>
+        </div>
+    <?php else: ?>
+        <div class="cart-container animate-on-scroll">
+            <!-- Cart Table -->
+            <div class="cart-table-container">
+                <table class="cart-table">
+                    <thead>
+                        <tr>
+                            <th>Sản phẩm</th>
+                            <th>Giá</th>
+                            <th>Số lượng</th>
+                            <th>Thành tiền</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($cart as $id => $item): ?>
                             <tr>
-                                <th>Sản phẩm</th>
-                                <th>Giá</th>
-                                <th>Số lượng</th>
-                                <th>Thành tiền</th>
-                                <th>Xóa</th>
+                                <td data-label="Sản phẩm">
+                                    <div class="cart-item-info">
+                                        <div class="cart-item-img">
+                                            <img src="assets/images/products/<?php echo htmlspecialchars($item['image'] ?? 'default.jpg'); ?>" 
+                                                 alt="<?php echo htmlspecialchars($item['name']); ?>">
+                                        </div>
+                                        <div class="cart-item-details">
+                                            <h4><?php echo htmlspecialchars($item['name']); ?></h4>
+                                            <p class="cart-item-category"><?php echo htmlspecialchars($item['category'] ?? ''); ?></p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td data-label="Giá">
+                                    <span class="cart-item-price"><?php echo number_format($item['price'], 0, ',', '.'); ?>đ</span>
+                                </td>
+                                <td data-label="Số lượng">
+                                    <div class="quantity-control">
+                                        <a href="update_cart.php?action=decrease&id=<?php echo $id; ?>" class="quantity-btn decrease">-</a>
+                                        <input type="text" value="<?php echo $item['quantity']; ?>" readonly>
+                                        <a href="update_cart.php?action=increase&id=<?php echo $id; ?>" class="quantity-btn increase">+</a>
+                                    </div>
+                                </td>
+                                <td data-label="Thành tiền">
+                                    <span class="cart-item-total"><?php echo number_format($item['price'] * $item['quantity'], 0, ',', '.'); ?>đ</span>
+                                </td>
+                                <td data-label="">
+                                    <a href="update_cart.php?action=remove&id=<?php echo $id; ?>" class="remove-item" title="Xóa sản phẩm">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </td>
                             </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach ($cart_items as $item) { ?>
-                                <tr>
-                                    <td class="product-info">
-                                        <img src="assets/images/<?php echo htmlspecialchars($item['image']); ?>" alt="<?php echo htmlspecialchars($item['name']); ?>">
-                                        <div>
-                                            <h3><?php echo htmlspecialchars($item['name']); ?></h3>
-                                        </div>
-                                    </td>
-                                    <td><?php echo number_format($item['price'], 0, ',', '.'); ?> VNĐ</td>
-                                    <td>
-                                        <div class="quantity-control">
-                                            <a href="update_cart.php?action=decrease&id=<?php echo $item['id']; ?>">-</a>
-                                            <span><?php echo $item['quantity']; ?></span>
-                                            <a href="update_cart.php?action=increase&id=<?php echo $item['id']; ?>">+</a>
-                                        </div>
-                                    </td>
-                                    <td><?php echo number_format($item['subtotal'], 0, ',', '.'); ?> VNĐ</td>
-                                    <td>
-                                        <a href="update_cart.php?action=remove&id=<?php echo $item['id']; ?>" class="remove-btn">
-                                            <img src="assets/images/delete-icon.png" alt="Xóa">
-                                        </a>
-                                    </td>
-                                </tr>
-                            <?php } ?>
-                        </tbody>
-                    </table>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Cart Summary -->
+            <div class="cart-summary">
+                <h3>Tóm tắt đơn hàng</h3>
+                <div class="summary-item">
+                    <span>Tạm tính:</span>
+                    <span><?php echo number_format($subtotal, 0, ',', '.'); ?>đ</span>
+                </div>
+                <div class="summary-item">
+                    <span>Phí vận chuyển:</span>
+                    <span>
+                        <?php if ($shipping_fee == 0): ?>
+                            <span style="color: var(--success-color);">Miễn phí</span>
+                        <?php else: ?>
+                            <?php echo number_format($shipping_fee, 0, ',', '.'); ?>đ
+                        <?php endif; ?>
+                    </span>
+                </div>
+                <?php if ($subtotal < 500000): ?>
+                    <div class="summary-item promo-info">
+                        <span>Mua thêm <?php echo number_format(500000 - $subtotal, 0, ',', '.'); ?>đ để được miễn phí vận chuyển</span>
+                    </div>
+                <?php endif; ?>
+                <div class="summary-item summary-total">
+                    <span>Tổng cộng:</span>
+                    <span><?php echo number_format($total, 0, ',', '.'); ?>đ</span>
+                </div>
+                <div class="cart-actions">
+                    <a href="index.php" class="btn btn-outline">Tiếp tục mua sắm</a>
+                    <a href="checkout.php" class="btn checkout-btn">Tiến hành thanh toán</a>
                 </div>
                 
-                <div class="cart-summary">
-                    <h2>Tóm tắt đơn hàng</h2>
-                    <div class="summary-row">
-                        <span>Tạm tính:</span>
-                        <span><?php echo number_format($total, 0, ',', '.'); ?> VNĐ</span>
-                    </div>
-                    <div class="summary-row">
-                        <span>Phí vận chuyển:</span>
-                        <span>30,000 VNĐ</span>
-                    </div>
-                    <div class="summary-row total">
-                        <span>Tổng cộng:</span>
-                        <span><?php echo number_format($total + 30000, 0, ',', '.'); ?> VNĐ</span>
-                    </div>
-                    <a href="checkout.php" class="btn btn-primary btn-block">Thanh toán</a>
-                    <a href="index.php" class="btn btn-outline btn-block">Tiếp tục mua sắm</a>
+                <!-- Coupon Code -->
+                <div class="coupon-section">
+                    <h4>Mã giảm giá</h4>
+                    <form action="apply_coupon.php" method="post" class="coupon-form">
+                        <input type="text" name="coupon_code" placeholder="Nhập mã giảm giá">
+                        <button type="submit" class="btn">Áp dụng</button>
+                    </form>
                 </div>
             </div>
-        <?php } ?>
-    </div>
+        </div>
+        
+        <!-- Recommended Products -->
+        <div class="section">
+            <h2 class="section-title">Sản phẩm gợi ý</h2>
+            <div class="products-grid">
+                <?php
+                // Lấy sản phẩm gợi ý (ngẫu nhiên)
+                $recommended_query = "SELECT * FROM products ORDER BY RAND() LIMIT 4";
+                $recommended_result = mysqli_query($conn, $recommended_query);
+                while ($product = mysqli_fetch_assoc($recommended_result)):
+                ?>
+                    <div class="product" data-category="<?php echo $product['category_id']; ?>" data-price="<?php echo $product['price']; ?>">
+                        <div class="product-img" style="background-image: url('assets/images/products/<?php echo htmlspecialchars($product['image'] ?? 'default.jpg'); ?>');"></div>
+                        <div class="product-info">
+                            <div class="product-vendor"><?php echo htmlspecialchars($product['category_name'] ?? ''); ?></div>
+                            <div class="product-title"><?php echo htmlspecialchars($product['name']); ?></div>
+                            <div class="product-price">
+                                <span class="current-price"><?php echo number_format($product['price'], 0, ',', '.'); ?>đ</span>
+                            </div>
+                            <div class="product-rating">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="far fa-star"></i>
+                                <span>(<?php echo rand(5, 30); ?> đánh giá)</span>
+                            </div>
+                            <div class="product-footer">
+                                <a href="product_detail.php?id=<?php echo $product['id']; ?>" class="btn">Xem chi tiết</a>
+                                <button class="wishlist-btn"><i class="far fa-heart"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                <?php endwhile; ?>
+            </div>
+        </div>
+    <?php endif; ?>
+</div>
+
+<?php include('includes/footer.php'); ?>
+
+<script>
+// Cart item quantity update
+document.querySelectorAll('.quantity-btn').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        window.location.href = this.getAttribute('href');
+    });
+});
+
+// Remove item confirmation
+document.querySelectorAll('.remove-item').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+        if (!confirm('Bạn có chắc chắn muốn xóa sản phẩm này khỏi giỏ hàng?')) {
+            e.preventDefault();
+        }
+    });
+});
+
+// Coupon form submission
+document.querySelector('.coupon-form')?.addEventListener('submit', function(e) {
+    e.preventDefault();
+    const couponCode = this.querySelector('input[name="coupon_code"]').value.trim();
     
-    <?php include('includes/footer.php'); ?>
-</body>
-</html>
+    if (!couponCode) {
+        showToast('error', 'Vui lòng nhập mã giảm giá');
+        return;
+    }
+    
+    // Simulate API call
+    this.querySelector('button[type="submit"]').textContent = 'Đang xử lý...';
+    this.querySelector('button[type="submit"]').disabled = true;
+    
+    setTimeout(() => {
+        // Reset button
+        this.querySelector('button[type="submit"]').textContent = 'Áp dụng';
+        this.querySelector('button[type="submit"]').disabled = false;
+        
+        // Show message (in real app, this would be based on server response)
+        if (couponCode === 'SHOPPINK10') {
+            showToast('success', 'Áp dụng mã giảm giá thành công! Giảm 10% tổng đơn hàng.');
+            // In real app, update the cart summary
+        } else {
+            showToast('error', 'Mã giảm giá không hợp lệ hoặc đã hết hạn.');
+        }
+    }, 1000);
+});
+</script>

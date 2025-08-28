@@ -10,7 +10,7 @@ include('includes/header.php');
     <div class="about-content">
         <div class="about-section">
             <h2>Câu chuyện của chúng tôi</h2>
-            <p>ShopPink được thành lập vào năm 2023 với sứ mệnh mang đến cho khách hàng những sản phẩm chất lượng cao với giá cả hợp lý. Từ một cửa hàng nhỏ, chúng tôi đã không ngừng phát triển và trở thành một trong những trang thương mại điện tử hàng đầu tại Việt Nam.</p>
+            <p>ShopPink được thành lập vào năm 2025 với sứ mệnh mang đến cho khách hàng những sản phẩm chất lượng cao với giá cả hợp lý. Từ một cửa hàng nhỏ, chúng tôi đã không ngừng phát triển và trở thành một trong những trang thương mại điện tử hàng đầu tại Việt Nam.</p>
             <p>Chúng tôi tin rằng mỗi khách hàng đều xứng đáng nhận được sự phục vụ tốt nhất và những sản phẩm chất lượng nhất. Với đội ngũ nhân viên tận tâm và hệ thống quản lý hiện đại, ShopPink cam kết mang đến trải nghiệm mua sắm tuyệt vời cho bạn.</p>
         </div>
         

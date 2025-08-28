@@ -117,8 +117,8 @@ include('includes/header.php');
             <p>Nếu bạn có bất kỳ câu hỏi nào về các điều khoản sử dụng này, vui lòng liên hệ với chúng tôi qua:</p>
             <ul>
                 <li>Email: support@shoppink.com</li>
-                <li>Điện thoại: (028) 1234 5678</li>
-                <li>Địa chỉ: 123 Nguyễn Huệ, Quận 1, TP. Hồ Chí Minh</li>
+                <li>Điện thoại: 0123456789</li>
+                <li>Địa chỉ: Hà Nội</li>
             </ul>
         </div>
     </div>
