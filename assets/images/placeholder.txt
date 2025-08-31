@@ -1,0 +1,10 @@
+This directory contains product images, category images, and other media files.
+
+Structure:
+- products/ - Product images
+- categories/ - Category images  
+- hero/ - Hero section images
+- logo/ - Logo files
+- icons/ - Icon files
+
+Note: Actual image files should be placed in their respective directories.
