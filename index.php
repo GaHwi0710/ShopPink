@@ -1,308 +1,270 @@
 <?php
-require_once 'includes/autoload.php';
+session_start();
+// Error reporting
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
-// Lấy danh mục
-$categories_stmt = $conn->prepare("
-    SELECT c.*, COUNT(p.id) as product_count 
-    FROM categories c 
-    LEFT JOIN products p ON c.id = p.category_id AND p.status = 'active'
-    WHERE c.status = 'active' AND c.parent_id IS NULL
-    GROUP BY c.id 
-    ORDER BY c.sort_order, c.name
-");
-$categories_stmt->execute();
-$categories = $categories_stmt->get_result();
+// Define base path
+define('BASE_PATH', __DIR__);
 
-// Lấy sản phẩm nổi bật
-$featured_products = getFeaturedProducts(8);
+// Define SITE_URL
+$protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
+$host = $_SERVER['HTTP_HOST'];
+$scriptName = $_SERVER['SCRIPT_NAME'];
+$path = str_replace(basename($scriptName), '', $scriptName);
+define('SITE_URL', $protocol . '://' . $host . $path);
 
-// Lấy sản phẩm bán chạy
-$bestseller_products = getBestsellerProducts(8);
-
-// Lấy sản phẩm gần đây nếu user đã đăng nhập
-$recent_products = null;
-if (is_logged_in()) {
-    $recent_products = getRecentlyViewedProducts($_SESSION['user_id'], 4);
+// Sửa lại để xử lý hash routing
+$url = '';
+if (isset($_GET['url'])) {
+    $url = $_GET['url'];
+} elseif (isset($_SERVER['REQUEST_URI'])) {
+    // Xử lý hash routing
+    $hash = parse_url($_SERVER['REQUEST_URI'], PHP_URL_FRAGMENT);
+    if ($hash) {
+        $url = $hash;
+    }
 }
 
-$page_title = 'Trang chủ';
-include('includes/header.php');
-?>
+// Mặc định là home nếu không có URL
+if (empty($url)) {
+    $url = 'home';
+}
+// Load required files
+require_once BASE_PATH . '/config/database.php';
+require_once BASE_PATH . '/core/Auth.php';
 
-<div class="hero-section">
-    <div class="hero-slider">
-        <div class="hero-slide active">
-            <div class="hero-content">
-                <h1>Chào mừng đến với ShopPink</h1>
-                <p>Khám phá bộ sưu tập mỹ phẩm chất lượng cao với giá cả hợp lý</p>
-                <a href="products.php" class="btn btn-primary btn-large">
-                    <i class="fas fa-shopping-bag"></i> Mua sắm ngay
-                </a>
-            </div>
-            <div class="hero-image">
-                <img src="assets/images/hero-1.jpg" alt="Mỹ phẩm chất lượng cao">
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="container">
-    <!-- Danh mục sản phẩm -->
-    <section class="categories-section">
-        <h2 class="section-title">
-            <i class="fas fa-th-large"></i> Danh mục sản phẩm
-        </h2>
-        
-        <div class="categories-grid">
-            <?php while ($category = $categories->fetch_assoc()): ?>
-                <div class="category-card">
-                    <div class="category-image">
-                        <img src="assets/images/categories/<?php echo htmlspecialchars($category['image'] ?? 'default.jpg'); ?>" 
-                             alt="<?php echo htmlspecialchars($category['name']); ?>">
-                    </div>
-                    
-                    <div class="category-info">
-                        <h3><?php echo htmlspecialchars($category['name']); ?></h3>
-                        <p><?php echo $category['product_count']; ?> sản phẩm</p>
-                        <a href="products.php?category=<?php echo $category['id']; ?>" class="btn btn-outline-primary">
-                            Xem tất cả
-                        </a>
-                    </div>
-                </div>
-            <?php endwhile; ?>
-        </div>
-    </section>
+// Autoload classes
+spl_autoload_register(function ($class_name) {
+    $paths = [
+        BASE_PATH . '/controllers/',
+        BASE_PATH . '/models/',
+        BASE_PATH . '/core/'
+    ];
     
-    <!-- Sản phẩm nổi bật -->
-    <section class="featured-section">
-        <h2 class="section-title">
-            <i class="fas fa-star"></i> Sản phẩm nổi bật
-        </h2>
-        
-        <div class="products-grid">
-            <?php while ($product = $featured_products->fetch_assoc()): ?>
-                <div class="product-card">
-                    <div class="product-image">
-                        <a href="product_detail.php?id=<?php echo $product['id']; ?>">
-                            <img src="assets/images/products/<?php echo htmlspecialchars($product['image']); ?>" 
-                                 alt="<?php echo htmlspecialchars($product['name']); ?>">
-                        </a>
-                        
-                        <?php if ($product['discount'] > 0): ?>
-                            <div class="discount-badge">
-                                -<?php echo $product['discount']; ?>%
-                            </div>
-                        <?php endif; ?>
-                    </div>
-                    
-                    <div class="product-info">
-                        <h3 class="product-name">
-                            <a href="product_detail.php?id=<?php echo $product['id']; ?>">
-                                <?php echo htmlspecialchars($product['name']); ?>
-                            </a>
-                        </h3>
-                        
-                        <div class="product-category">
-                            <a href="products.php?category=<?php echo $product['category_id']; ?>">
-                                <?php echo htmlspecialchars($product['category_name']); ?>
-                            </a>
-                        </div>
-                        
-                        <div class="product-rating">
-                            <div class="stars">
-                                <?php for ($i = 1; $i <= 5; $i++): ?>
-                                    <i class="fas fa-star <?php echo $i <= $product['avg_rating'] ? 'active' : ''; ?>"></i>
-                                <?php endfor; ?>
-                            </div>
-                        </div>
-                        
-                        <div class="product-price">
-                            <?php if ($product['discount'] > 0): ?>
-                                <span class="old-price"><?php echo format_price($product['price']); ?></span>
-                                <span class="new-price">
-                                    <?php echo format_price($product['price'] * (1 - $product['discount'] / 100)); ?>
-                                </span>
-                            <?php else: ?>
-                                <span class="price"><?php echo format_price($product['price']); ?></span>
-                            <?php endif; ?>
-                        </div>
-                        
-                        <div class="product-actions">
-                            <button class="btn btn-primary btn-block add-to-cart-btn" 
-                                    onclick="addToCart(<?php echo $product['id']; ?>)">
-                                <i class="fas fa-shopping-cart"></i> Thêm vào giỏ hàng
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            <?php endwhile; ?>
-        </div>
-        
-        <div class="section-actions">
-            <a href="products.php?featured=1" class="btn btn-outline-primary">
-                <i class="fas fa-star"></i> Xem tất cả sản phẩm nổi bật
-            </a>
-        </div>
-    </section>
-    
-    <!-- Sản phẩm bán chạy -->
-    <section class="bestseller-section">
-        <h2 class="section-title">
-            <i class="fas fa-fire"></i> Sản phẩm bán chạy
-        </h2>
-        
-        <div class="products-grid">
-            <?php while ($product = $bestseller_products->fetch_assoc()): ?>
-                <div class="product-card">
-                    <div class="product-image">
-                        <a href="product_detail.php?id=<?php echo $product['id']; ?>">
-                            <img src="assets/images/products/<?php echo htmlspecialchars($product['image']); ?>" 
-                                 alt="<?php echo htmlspecialchars($product['name']); ?>">
-                        </a>
-                        
-                        <?php if ($product['discount'] > 0): ?>
-                            <div class="discount-badge">
-                                -<?php echo $product['discount']; ?>%
-                            </div>
-                        <?php endif; ?>
-                        
-                        <div class="bestseller-badge">
-                            <i class="fas fa-fire"></i> Bán chạy
-                        </div>
-                    </div>
-                    
-                    <div class="product-info">
-                        <h3 class="product-name">
-                            <a href="product_detail.php?id=<?php echo $product['id']; ?>">
-                                <?php echo htmlspecialchars($product['name']); ?>
-                            </a>
-                        </h3>
-                        
-                        <div class="product-category">
-                            <a href="products.php?category=<?php echo $product['category_id']; ?>">
-                                <?php echo htmlspecialchars($product['category_name']); ?>
-                            </a>
-                        </div>
-                        
-                        <div class="product-rating">
-                            <div class="stars">
-                                <?php for ($i = 1; $i <= 5; $i++): ?>
-                                    <i class="fas fa-star <?php echo $i <= $product['avg_rating'] ? 'active' : ''; ?>"></i>
-                                <?php endfor; ?>
-                            </div>
-                        </div>
-                        
-                        <div class="product-price">
-                            <?php if ($product['discount'] > 0): ?>
-                                <span class="old-price"><?php echo format_price($product['price']); ?></span>
-                                <span class="new-price">
-                                    <?php echo format_price($product['price'] * (1 - $product['discount'] / 100)); ?>
-                                </span>
-                            <?php else: ?>
-                                <span class="price"><?php echo format_price($product['price']); ?></span>
-                            <?php endif; ?>
-                        </div>
-                        
-                        <div class="product-actions">
-                            <button class="btn btn-primary btn-block add-to-cart-btn" 
-                                    onclick="addToCart(<?php echo $product['id']; ?>)">
-                                <i class="fas fa-shopping-cart"></i> Thêm vào giỏ hàng
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            <?php endwhile; ?>
-        </div>
-        
-        <div class="section-actions">
-            <a href="products.php?bestseller=1" class="btn btn-outline-primary">
-                <i class="fas fa-fire"></i> Xem tất cả sản phẩm bán chạy
-            </a>
-        </div>
-    </section>
-    
-    <!-- Sản phẩm gần đây (nếu user đã đăng nhập) -->
-    <?php if ($recent_products && $recent_products->num_rows > 0): ?>
-        <section class="recent-section">
-            <h2 class="section-title">
-                <i class="fas fa-clock"></i> Sản phẩm gần đây
-            </h2>
-            
-            <div class="products-grid">
-                <?php while ($product = $recent_products->fetch_assoc()): ?>
-                    <div class="product-card">
-                        <div class="product-image">
-                            <a href="product_detail.php?id=<?php echo $product['id']; ?>">
-                                <img src="assets/images/products/<?php echo htmlspecialchars($product['image']); ?>" 
-                                     alt="<?php echo htmlspecialchars($product['name']); ?>">
-                            </a>
-                        </div>
-                        
-                        <div class="product-info">
-                            <h3 class="product-name">
-                                <a href="product_detail.php?id=<?php echo $product['id']; ?>">
-                                    <?php echo htmlspecialchars($product['name']); ?>
-                                </a>
-                            </h3>
-                            
-                            <div class="product-category">
-                                <a href="products.php?category=<?php echo $product['category_id']; ?>">
-                                    <?php echo htmlspecialchars($product['category_name']); ?>
-                                </a>
-                            </div>
-                            
-                            <div class="product-price">
-                                <?php if ($product['discount'] > 0): ?>
-                                    <span class="old-price"><?php echo format_price($product['price']); ?></span>
-                                    <span class="new-price">
-                                        <?php echo format_price($product['price'] * (1 - $product['discount'] / 100)); ?>
-                                    </span>
-                                <?php else: ?>
-                                    <span class="price"><?php echo format_price($product['price']); ?></span>
-                                <?php endif; ?>
-                            </div>
-                            
-                            <div class="product-actions">
-                                <button class="btn btn-primary btn-block add-to-cart-btn" 
-                                        onclick="addToCart(<?php echo $product['id']; ?>)">
-                                    <i class="fas fa-shopping-cart"></i> Thêm vào giỏ hàng
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                <?php endwhile; ?>
-            </div>
-        </section>
-    <?php endif; ?>
-</div>
-
-<script>
-function addToCart(productId) {
-    <?php if (is_logged_in()): ?>
-        // Nếu đã đăng nhập, thêm vào giỏ hàng
-        fetch('customer/cart.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: 'action=add&product_id=' + productId + '&quantity=1'
-        })
-        .then(response => response.text())
-        .then(data => {
-            // Reload trang để cập nhật giỏ hàng
-            location.reload();
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Có lỗi xảy ra khi thêm vào giỏ hàng!');
-        });
-    <?php else: ?>
-        // Nếu chưa đăng nhập, chuyển đến trang đăng nhập
-        if (confirm('Bạn cần đăng nhập để thêm sản phẩm vào giỏ hàng. Đăng nhập ngay?')) {
-            window.location.href = 'auth/login.php';
+    foreach ($paths as $path) {
+        $file = $path . $class_name . '.php';
+        if (file_exists($file)) {
+            require_once $file;
+            return;
         }
-    <?php endif; ?>
-}
-</script>
+    }
+});
 
-<?php include('includes/footer.php'); ?>
+// Simple routing
+switch ($url) {
+// Dòng ~40-45
+    case 'home':
+        $controller = new ProductController();
+        $controller->index();
+        break;
+        
+    case 'products':
+        $controller = new ProductController();
+        if (isset($_GET['id']) && is_numeric($_GET['id'])) {
+            $controller->detail($_GET['id']);
+        } else {
+            $controller->index();
+        }
+        break;
+        
+    case 'search':
+        $controller = new ProductController();
+        $controller->search();
+        break;
+        
+    case 'login':
+        $controller = new AuthController();
+        $controller->login();
+        break;
+        
+    case 'register':
+        $controller = new AuthController();
+        $controller->register();
+        break;
+        
+    case 'logout':
+        $controller = new AuthController();
+        $controller->logout();
+        break;
+        
+    case 'cart':
+        $controller = new UserController();
+        $controller->cart();
+        break;
+        
+    case 'add-to-cart':
+        $controller = new UserController();
+        $controller->addToCart();
+        break;
+        
+    case 'remove-from-cart':
+        $controller = new UserController();
+        $controller->removeFromCart();
+        break;
+        
+    case 'update-cart':
+        $controller = new UserController();
+        $controller->updateCart();
+        break;
+        
+    case 'checkout':
+        $controller = new UserController();
+        $controller->checkout();
+        break;
+        
+    case 'place-order':
+        $controller = new UserController();
+        $controller->placeOrder();
+        break;
+        
+    case 'orders':
+        $controller = new UserController();
+        if (isset($_GET['id']) && is_numeric($_GET['id'])) {
+            $controller->orderDetail($_GET['id']);
+        } else {
+            $controller->orders();
+        }
+        break;
+        
+    case 'cancel-order':
+        $controller = new UserController();
+        if (isset($_GET['id']) && is_numeric($_GET['id'])) {
+            $controller->cancelOrder($_GET['id']);
+        }
+        break;
+        
+    case 'review':
+        $controller = new UserController();
+        $controller->review();
+        break;
+        
+    case 'profile':
+        $controller = new UserController();
+        $controller->profile();
+        break;
+        
+    case 'update-profile':
+        $controller = new UserController();
+        $controller->updateProfile();
+        break;
+        
+    case 'change-password':
+        $controller = new UserController();
+        $controller->changePassword();
+        break;
+        
+    case 'addresses':
+        $controller = new UserController();
+        $controller->addresses();
+        break;
+        
+    case 'add-address':
+        $controller = new UserController();
+        $controller->addAddress();
+        break;
+        
+    case 'edit-address':
+        $controller = new UserController();
+        if (isset($_GET['id']) && is_numeric($_GET['id'])) {
+            $controller->editAddress($_GET['id']);
+        }
+        break;
+        
+    case 'delete-address':
+        $controller = new UserController();
+        if (isset($_GET['id']) && is_numeric($_GET['id'])) {
+            $controller->deleteAddress($_GET['id']);
+        }
+        break;
+        
+    case 'set-default-address':
+        $controller = new UserController();
+        if (isset($_GET['id']) && is_numeric($_GET['id'])) {
+            $controller->setDefaultAddress($_GET['id']);
+        }
+        break;
+        
+    case 'wishlist':
+        $controller = new UserController();
+        $controller->wishlist();
+        break;
+        
+    case 'add-to-wishlist':
+        $controller = new UserController();
+        $controller->addToWishlist();
+        break;
+        
+    case 'remove-from-wishlist':
+        $controller = new UserController();
+        $controller->removeFromWishlist();
+        break;
+        
+    case 'notifications':
+        $controller = new UserController();
+        $controller->notifications();
+        break;
+        
+    case 'view-history':
+        $controller = new UserController();
+        $controller->viewHistory();
+        break;
+        
+    case 'vouchers':
+        $controller = new UserController();
+        $controller->vouchers();
+        break;
+        
+    case 'apply-voucher':
+        $controller = new UserController();
+        $controller->applyVoucher();
+        break;
+        
+    // User dashboard
+    case 'user':
+        $controller = new UserController();
+        if (!isset($_GET['url']) || $_GET['url'] === 'dashboard') {
+            $controller->dashboard();
+        }
+        break;
+        
+    // Seller dashboard
+    case 'seller':
+        $controller = new SellerController();
+        if (!isset($_GET['url']) || $_GET['url'] === 'dashboard') {
+            $controller->dashboard();
+        } elseif ($_GET['url'] === 'products') {
+            $controller->products();
+        } elseif ($_GET['url'] === 'add-product') {
+            $controller->addProduct();
+        } elseif (strpos($_GET['url'], 'edit-product') === 0) {
+            $parts = explode('-', $_GET['url']);
+            if (isset($parts[2]) && is_numeric($parts[2])) {
+                $controller->editProduct($parts[2]);
+            }
+        } elseif (strpos($_GET['url'], 'delete-product') === 0) {
+            $parts = explode('-', $_GET['url']);
+            if (isset($parts[2]) && is_numeric($parts[2])) {
+                $controller->deleteProduct($parts[2]);
+            }
+        } elseif ($_GET['url'] === 'orders') {
+            $controller->orders();
+        } elseif (strpos($_GET['url'], 'order-detail') === 0) {
+            $parts = explode('-', $_GET['url']);
+            if (isset($parts[2]) && is_numeric($parts[2])) {
+                $controller->orderDetail($parts[2]);
+            }
+        } elseif ($_GET['url'] === 'update-order-status') {
+            $controller->updateOrderStatus();
+        } elseif ($_GET['url'] === 'revenue') {
+            $controller->revenue();
+        } elseif ($_GET['url'] === 'settings') {
+            $controller->settings();
+        }
+        break;
+        
+    default:
+        include BASE_PATH . '/views/404.php';
+        break;
+}
+?>
