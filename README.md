@@ -2,7 +2,7 @@
 
 ## Giới thiệu
 
-ShopPink là một dự án sàn thương mại điện tử giống như Shopee/Lazada, cho phép người dùng mua sắm và người bán đăng bán sản phẩm.
+ShopPink là sàn thương mại điện tử hàng đầu Việt Nam năm 2025, kết nối người mua và người bán trên toàn quốc.
 
 ## Tính năng
 
