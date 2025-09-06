@@ -374,14 +374,17 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
         
-        quickViewClose.addEventListener('click', () => {
-            quickViewModal.classList.remove('active');
-            document.body.style.overflow = '';
-        });
+        if (quickViewClose) { 
+            quickViewClose.addEventListener('click', () => {
+                quickViewModal.classList.remove('active');
+                document.body.style.overflow = '';
+            });
+        } 
         
         // Close modal when clicking outside
         quickViewModal.addEventListener('click', (e) => {
-            if (e.target === quickViewModal) {
+            // Nếu người dùng bấm vào nền modal HOẶC bấm vào phần tử có class .modal-close (hoặc con của nó)
+            if (e.target === quickViewModal || e.target.closest('.modal-close')) {
                 quickViewModal.classList.remove('active');
                 document.body.style.overflow = '';
             }

@@ -1,6 +1,5 @@
 <?php
 require_once BASE_PATH . '/models/User.php';
-
 class AuthController {
     private $userModel;
     
@@ -14,6 +13,9 @@ class AuthController {
             header('Location: /');
             exit;
         }
+        
+        // Thêm biến page_title
+        $page_title = 'Đăng nhập - ShopPink';
         
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $username = $_POST['username'] ?? '';
@@ -59,6 +61,9 @@ class AuthController {
             header('Location: /');
             exit;
         }
+        
+        // Thêm biến page_title
+        $page_title = 'Đăng ký - ShopPink';
         
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $data = [

@@ -9,7 +9,6 @@
         </form>
     </div>
 </div>
-
 <!-- Footer -->
 <footer>
     <div class="container">
@@ -71,17 +70,14 @@
         </div>
     </div>
 </footer>
-
 <!-- Back to Top -->
 <div class="back-to-top" id="back-to-top">
     <i class="fas fa-arrow-up"></i>
 </div>
-
 <!-- Dark Mode Toggle -->
 <div class="dark-mode-toggle" id="dark-mode-toggle">
     <i class="fas fa-moon"></i>
 </div>
-
 <!-- Scripts -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>

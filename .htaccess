@@ -1,11 +1,7 @@
 RewriteEngine On
 RewriteBase /ShopPink/
 
-# Chuyển tất cả request đến index.php
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule . /ShopPink/index.php [L,QSA]
 
-# Xử lý hash routing
-RewriteCond %{REQUEST_URI} ^/ShopPink/.*#
-RewriteRule ^/ShopPink/(.*)#(.*)$ /ShopPink/index.php?url=$2 [L,QSA]
+RewriteRule ^(.*)$ index.php?url=$1 [L,QSA]

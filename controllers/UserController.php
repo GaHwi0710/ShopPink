@@ -20,6 +20,8 @@ class UserController {
     public function dashboard() {
         Auth::requireCustomer();
         
+        $page_title = 'Tổng quan - ShopPink';
+        
         $user = Auth::user();
         
         // Lấy đơn hàng gần đây
@@ -45,6 +47,8 @@ class UserController {
     
     // Giỏ hàng
     public function cart() {
+        $page_title = 'Giỏ hàng - ShopPink';
+        
         // Khởi tạo giỏ hàng nếu chưa có
         if (!isset($_SESSION['cart'])) {
             $_SESSION['cart'] = [];
@@ -55,36 +59,34 @@ class UserController {
         include BASE_PATH . '/views/layouts/footer.php';
     }
     
-    // Thêm sản phẩm vào giỏ hàng
+    // Thêm vào giỏ hàng
     public function addToCart() {
         $productId = $_POST['product_id'] ?? 0;
         $quantity = $_POST['quantity'] ?? 1;
         
         if ($productId > 0 && $quantity > 0) {
-            // Kiểm tra sản phẩm có tồn tại không
-            $product = $this->productModel->getById($productId);
-            
-            if ($product && $product['stock'] >= $quantity) {
-                // Thêm vào giỏ hàng
-                if (isset($_SESSION['cart'][$productId])) {
-                    $_SESSION['cart'][$productId] += $quantity;
-                } else {
-                    $_SESSION['cart'][$productId] = $quantity;
-                }
-                
-                $_SESSION['success'] = 'Đã thêm sản phẩm vào giỏ hàng!';
-            } else {
-                $_SESSION['error'] = 'Sản phẩm không tồn tại hoặc không đủ số lượng!';
+            // Khởi tạo giỏ hàng nếu chưa có
+            if (!isset($_SESSION['cart'])) {
+                $_SESSION['cart'] = [];
             }
+            
+            // Nếu sản phẩm đã có trong giỏ hàng, tăng số lượng
+            if (isset($_SESSION['cart'][$productId])) {
+                $_SESSION['cart'][$productId] += $quantity;
+            } else {
+                $_SESSION['cart'][$productId] = $quantity;
+            }
+            
+            $_SESSION['success'] = 'Đã thêm sản phẩm vào giỏ hàng!';
         } else {
-            $_SESSION['error'] = 'Dữ liệu không hợp lệ!';
+            $_SESSION['error'] = 'Không thể thêm sản phẩm vào giỏ hàng!';
         }
         
         header('Location: ' . $_SERVER['HTTP_REFERER']);
         exit;
     }
     
-    // Xóa sản phẩm khỏi giỏ hàng
+    // Xóa khỏi giỏ hàng
     public function removeFromCart() {
         $productId = $_GET['id'] ?? 0;
         
@@ -92,7 +94,7 @@ class UserController {
             unset($_SESSION['cart'][$productId]);
             $_SESSION['success'] = 'Đã xóa sản phẩm khỏi giỏ hàng!';
         } else {
-            $_SESSION['error'] = 'Không thể xóa sản phẩm!';
+            $_SESSION['error'] = 'Không thể xóa sản phẩm khỏi giỏ hàng!';
         }
         
         header('Location: /cart');
@@ -101,23 +103,18 @@ class UserController {
     
     // Cập nhật giỏ hàng
     public function updateCart() {
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $productId = $_POST['product_id'] ?? 0;
-            $quantity = $_POST['quantity'] ?? 1;
-            
-            if ($productId > 0 && $quantity > 0) {
-                // Kiểm tra sản phẩm có tồn tại không
-                $product = $this->productModel->getById($productId);
-                
-                if ($product && $product['stock'] >= $quantity) {
+        if (isset($_POST['quantity']) && is_array($_POST['quantity'])) {
+            foreach ($_POST['quantity'] as $productId => $quantity) {
+                if ($quantity > 0) {
                     $_SESSION['cart'][$productId] = $quantity;
-                    $_SESSION['success'] = 'Đã cập nhật giỏ hàng!';
                 } else {
-                    $_SESSION['error'] = 'Sản phẩm không tồn tại hoặc không đủ số lượng!';
+                    unset($_SESSION['cart'][$productId]);
                 }
-            } else {
-                $_SESSION['error'] = 'Dữ liệu không hợp lệ!';
             }
+            
+            $_SESSION['success'] = 'Đã cập nhật giỏ hàng!';
+        } else {
+            $_SESSION['error'] = 'Không thể cập nhật giỏ hàng!';
         }
         
         header('Location: /cart');
@@ -126,123 +123,82 @@ class UserController {
     
     // Thanh toán
     public function checkout() {
+        $page_title = 'Thanh toán - ShopPink';
+        
         Auth::requireCustomer();
         
-        // Kiểm tra giỏ hàng có trống không
-        if (empty($_SESSION['cart'])) {
+        // Kiểm tra giỏ hàng
+        if (!isset($_SESSION['cart']) || empty($_SESSION['cart'])) {
             $_SESSION['error'] = 'Giỏ hàng của bạn đang trống!';
             header('Location: /cart');
             exit;
         }
         
-        // Lấy thông tin người dùng
-        $user = Auth::user();
+        // Lấy địa chỉ mặc định của người dùng
+        $defaultAddress = $this->userModel->getDefaultAddress(Auth::id());
         
-        // Lấy địa chỉ mặc định
-        $defaultAddress = $this->userModel->getDefaultAddress($user['id']);
-        
-        // Lấy voucher của người dùng
-        $vouchers = $this->userModel->getVouchers($user['id']);
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $data = [
+                'customer_id' => Auth::id(),
+                'items' => [],
+                'total_amount' => 0,
+                'shipping_address' => $_POST['shipping_address'],
+                'payment_method' => $_POST['payment_method']
+            ];
+            
+            // Tính tổng tiền và chuẩn bị dữ liệu các sản phẩm
+            foreach ($_SESSION['cart'] as $productId => $quantity) {
+                $product = $this->productModel->getById($productId);
+                
+                if ($product && $product['stock'] >= $quantity) {
+                    $item = [
+                        'product_id' => $productId,
+                        'quantity' => $quantity,
+                        'price' => $product['price']
+                    ];
+                    
+                    $data['items'][] = $item;
+                    $data['total_amount'] += $product['price'] * $quantity;
+                } else {
+                    $_SESSION['error'] = 'Sản phẩm ' . $product['name'] . ' không đủ số lượng!';
+                    include BASE_PATH . '/views/layouts/header.php';
+                    include BASE_PATH . '/views/user/checkout.php';
+                    include BASE_PATH . '/views/layouts/footer.php';
+                    return;
+                }
+            }
+            
+            // Áp dụng voucher nếu có
+            $voucherId = $_POST['voucher_id'] ?? 0;
+            if ($voucherId > 0) {
+                // Xử lý áp dụng voucher
+                // (Cần triển khai thêm)
+            }
+            
+            // Tạo đơn hàng
+            $orderId = $this->orderModel->create($data);
+            
+            if ($orderId) {
+                // Xóa giỏ hàng
+                unset($_SESSION['cart']);
+                
+                $_SESSION['success'] = 'Đặt hàng thành công!';
+                header('Location: /orders/' . $orderId);
+                exit;
+            } else {
+                $error = 'Đặt hàng thất bại. Vui lòng thử lại!';
+            }
+        }
         
         include BASE_PATH . '/views/layouts/header.php';
         include BASE_PATH . '/views/user/checkout.php';
         include BASE_PATH . '/views/layouts/footer.php';
     }
     
-    // Đặt hàng
-    public function placeOrder() {
-        Auth::requireCustomer();
-        
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            // Kiểm tra giỏ hàng có trống không
-            if (empty($_SESSION['cart'])) {
-                $_SESSION['error'] = 'Giỏ hàng của bạn đang trống!';
-                header('Location: /cart');
-                exit;
-            }
-            
-            $userId = Auth::id();
-            $shippingAddress = $_POST['shipping_address'] ?? '';
-            $paymentMethod = $_POST['payment_method'] ?? 'cod';
-            $voucherId = $_POST['voucher_id'] ?? null;
-            
-            // Tính tổng tiền
-            $totalAmount = 0;
-            $items = [];
-            
-            foreach ($_SESSION['cart'] as $productId => $quantity) {
-                $product = $this->productModel->getById($productId);
-                
-                if ($product && $product['stock'] >= $quantity) {
-                    $subtotal = $product['price'] * $quantity;
-                    $totalAmount += $subtotal;
-                    
-                    $items[] = [
-                        'product_id' => $productId,
-                        'quantity' => $quantity,
-                        'price' => $product['price']
-                    ];
-                } else {
-                    $_SESSION['error'] = 'Một số sản phẩm không còn đủ số lượng!';
-                    header('Location: /checkout');
-                    exit;
-                }
-            }
-            
-            // Áp dụng voucher nếu có
-            if ($voucherId) {
-                $voucher = $this->userModel->getVoucherById($voucherId, $userId);
-                if ($voucher && !$voucher['is_used']) {
-                    if ($voucher['discount_type'] === 'fixed') {
-                        $totalAmount -= $voucher['discount_value'];
-                    } else {
-                        $totalAmount -= $totalAmount * ($voucher['discount_value'] / 100);
-                    }
-                    
-                    // Đảm bảo tổng tiền không âm
-                    if ($totalAmount < 0) {
-                        $totalAmount = 0;
-                    }
-                }
-            }
-            
-            // Tạo đơn hàng
-            $orderData = [
-                'customer_id' => $userId,
-                'total_amount' => $totalAmount,
-                'shipping_address' => $shippingAddress,
-                                'payment_method' => $paymentMethod,
-                'items' => $items
-            ];
-            
-            $orderId = $this->orderModel->create($orderData);
-            
-            if ($orderId) {
-                // Cập nhật voucher đã sử dụng nếu có
-                if ($voucherId) {
-                    $this->userModel->useVoucher($voucherId, $orderId);
-                }
-                
-                // Xóa giỏ hàng
-                unset($_SESSION['cart']);
-                
-                // Thêm thông báo cho người dùng
-                $this->userModel->addNotification($userId, 'Đơn hàng mới', 'Đơn hàng #' . $orderId . ' của bạn đã được tạo thành công.', 'order');
-                
-                $_SESSION['success'] = 'Đặt hàng thành công!';
-                header('Location: /orders/' . $orderId);
-                exit;
-            } else {
-                $_SESSION['error'] = 'Đặt hàng thất bại!';
-            }
-        }
-        
-        header('Location: /checkout');
-        exit;
-    }
-    
     // Lịch sử đơn hàng
     public function orders() {
+        $page_title = 'Lịch sử đơn hàng - ShopPink';
+        
         Auth::requireCustomer();
         
         $orders = $this->orderModel->getByCustomer(Auth::id());
@@ -254,6 +210,8 @@ class UserController {
     
     // Chi tiết đơn hàng
     public function orderDetail($id) {
+        $page_title = 'Chi tiết đơn hàng - ShopPink';
+        
         Auth::requireCustomer();
         
         $order = $this->orderModel->getById($id);
@@ -277,19 +235,10 @@ class UserController {
         $order = $this->orderModel->getById($id);
         
         if ($order && $order['customer_id'] == Auth::id() && $order['status'] === 'pending') {
-            if ($this->orderModel->updateStatus($id, 'cancelled')) {
-                // Hoàn lại số lượng tồn kho
-                $orderItems = $this->orderModel->getOrderItems($id);
-                foreach ($orderItems as $item) {
-                    $this->productModel->increaseStock($item['product_id'], $item['quantity']);
-                }
-                
-                // Thêm thông báo cho người dùng
-                $this->userModel->addNotification(Auth::id(), 'Hủy đơn hàng', 'Đơn hàng #' . $id . ' đã được hủy thành công.', 'order');
-                
-                $_SESSION['success'] = 'Hủy đơn hàng thành công!';
+            if ($this->orderModel->cancel($id, Auth::id())) {
+                $_SESSION['success'] = 'Đã hủy đơn hàng thành công!';
             } else {
-                $_SESSION['error'] = 'Hủy đơn hàng thất bại!';
+                $_SESSION['error'] = 'Không thể hủy đơn hàng!';
             }
         } else {
             $_SESSION['error'] = 'Không thể hủy đơn hàng!';
@@ -305,34 +254,35 @@ class UserController {
         
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $productId = $_POST['product_id'] ?? 0;
+            $customerId = Auth::id();
             $rating = $_POST['rating'] ?? 5;
             $comment = $_POST['comment'] ?? '';
             
-            // Kiểm tra xem người dùng đã mua sản phẩm chưa
-            if ($this->orderModel->hasPurchasedProduct(Auth::id(), $productId)) {
-                // Kiểm tra xem người dùng đã đánh giá sản phẩm chưa
-                if (!$this->reviewModel->hasReviewed(Auth::id(), $productId)) {
-                    $data = [
-                        'product_id' => $productId,
-                        'customer_id' => Auth::id(),
-                        'rating' => $rating,
-                        'comment' => $comment
-                    ];
-                    
-                    if ($this->reviewModel->create($data)) {
-                        // Thêm thông báo cho người bán
-                        $product = $this->productModel->getById($productId);
-                        $this->userModel->addNotification($product['seller_id'], 'Đánh giá mới', 'Sản phẩm của bạn vừa nhận được một đánh giá mới.', 'system');
-                        
-                        $_SESSION['success'] = 'Đánh giá thành công!';
-                    } else {
-                        $_SESSION['error'] = 'Đánh giá thất bại!';
-                    }
-                } else {
-                    $_SESSION['error'] = 'Bạn đã đánh giá sản phẩm này rồi!';
-                }
+            // Kiểm tra xem khách hàng đã mua sản phẩm chưa
+            if (!$this->reviewModel->hasPurchased($customerId, $productId)) {
+                $_SESSION['error'] = 'Bạn chỉ có thể đánh giá sản phẩm đã mua!';
+                header('Location: ' . $_SERVER['HTTP_REFERER']);
+                exit;
+            }
+            
+            // Kiểm tra xem khách hàng đã đánh giá sản phẩm chưa
+            if ($this->reviewModel->hasReviewed($customerId, $productId)) {
+                $_SESSION['error'] = 'Bạn đã đánh giá sản phẩm này rồi!';
+                header('Location: ' . $_SERVER['HTTP_REFERER']);
+                exit;
+            }
+            
+            $data = [
+                'product_id' => $productId,
+                'customer_id' => $customerId,
+                'rating' => $rating,
+                'comment' => $comment
+            ];
+            
+            if ($this->reviewModel->create($data)) {
+                $_SESSION['success'] = 'Đánh giá thành công!';
             } else {
-                $_SESSION['error'] = 'Bạn phải mua sản phẩm này mới được đánh giá!';
+                $_SESSION['error'] = 'Đánh giá thất bại!';
             }
         }
         
@@ -342,21 +292,13 @@ class UserController {
     
     // Hồ sơ người dùng
     public function profile() {
+        $page_title = 'Hồ sơ người dùng - ShopPink';
+        
         Auth::requireCustomer();
         
         $user = Auth::user();
         
-        include BASE_PATH . '/views/layouts/header.php';
-        include BASE_PATH . '/views/user/profile.php';
-        include BASE_PATH . '/views/layouts/footer.php';
-    }
-    
-    // Cập nhật hồ sơ
-    public function updateProfile() {
-        Auth::requireCustomer();
-        
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $userId = Auth::id();
             $data = [
                 'full_name' => $_POST['full_name'] ?? '',
                 'phone' => $_POST['phone'] ?? '',
@@ -365,62 +307,65 @@ class UserController {
             
             // Xử lý upload avatar
             if (isset($_FILES['avatar']) && $_FILES['avatar']['error'] == 0) {
-                $avatar = $this->uploadImage();
-                if ($avatar) {
-                    $data['avatar'] = $avatar;
+                $targetDir = 'assets/images/avatars/';
+                $fileName = time() . '_' . basename($_FILES['avatar']['name']);
+                $targetFile = $targetDir . $fileName;
+                
+                if (move_uploaded_file($_FILES['avatar']['tmp_name'], $targetFile)) {
+                    $data['avatar'] = $targetFile;
                 }
             }
             
-            if ($this->userModel->update($userId, $data)) {
-                // Cập nhật session
-                $_SESSION['user'] = $this->userModel->getById($userId);
-                
-                $_SESSION['success'] = 'Cập nhật hồ sơ thành công!';
+            if ($this->userModel->update(Auth::id(), $data)) {
+                $_SESSION['user'] = array_merge($_SESSION['user'], $data);
+                $_SESSION['success'] = 'Cập nhật thông tin thành công!';
             } else {
-                $_SESSION['error'] = 'Cập nhật hồ sơ thất bại!';
+                $_SESSION['error'] = 'Cập nhật thông tin thất bại!';
             }
         }
         
-        header('Location: /profile');
-        exit;
+        include BASE_PATH . '/views/layouts/header.php';
+        include BASE_PATH . '/views/user/profile.php';
+        include BASE_PATH . '/views/layouts/footer.php';
     }
     
     // Đổi mật khẩu
     public function changePassword() {
+        $page_title = 'Đổi mật khẩu - ShopPink';
+        
         Auth::requireCustomer();
         
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $userId = Auth::id();
             $currentPassword = $_POST['current_password'] ?? '';
             $newPassword = $_POST['new_password'] ?? '';
             $confirmPassword = $_POST['confirm_password'] ?? '';
             
-            // Kiểm tra mật khẩu hiện tại
-            $user = $this->userModel->getById($userId);
-            if ($user && password_verify($currentPassword, $user['password'])) {
-                // Kiểm tra mật khẩu mới và xác nhận mật khẩu
-                if ($newPassword === $confirmPassword && strlen($newPassword) >= 6) {
-                    $hashedPassword = password_hash($newPassword, PASSWORD_DEFAULT);
-                    
-                    if ($this->userModel->changePassword($userId, $hashedPassword)) {
-                        $_SESSION['success'] = 'Đổi mật khẩu thành công!';
-                    } else {
-                        $_SESSION['error'] = 'Đổi mật khẩu thất bại!';
-                    }
-                } else {
-                    $_SESSION['error'] = 'Mật khẩu mới không hợp lệ hoặc không khớp!';
-                }
-            } else {
+            $user = $this->userModel->getById(Auth::id());
+            
+            if (!$user || !password_verify($currentPassword, $user['password'])) {
                 $_SESSION['error'] = 'Mật khẩu hiện tại không đúng!';
+            } elseif ($newPassword !== $confirmPassword) {
+                $_SESSION['error'] = 'Mật khẩu mới và xác nhận mật khẩu không khớp!';
+            } elseif (strlen($newPassword) < 6) {
+                $_SESSION['error'] = 'Mật khẩu mới phải có ít nhất 6 ký tự!';
+            } else {
+                if ($this->userModel->changePassword(Auth::id(), $newPassword)) {
+                    $_SESSION['success'] = 'Đổi mật khẩu thành công!';
+                } else {
+                    $_SESSION['error'] = 'Đổi mật khẩu thất bại!';
+                }
             }
         }
         
-        header('Location: /profile');
-        exit;
+        include BASE_PATH . '/views/layouts/header.php';
+        include BASE_PATH . '/views/user/change_password.php';
+        include BASE_PATH . '/views/layouts/footer.php';
     }
     
     // Địa chỉ
     public function addresses() {
+        $page_title = 'Địa chỉ - ShopPink';
+        
         Auth::requireCustomer();
         
         $addresses = $this->userModel->getAddresses(Auth::id());
@@ -430,13 +375,15 @@ class UserController {
         include BASE_PATH . '/views/layouts/footer.php';
     }
     
-    // Thêm địa chỉ
+    // Thêm địa chỉ mới
     public function addAddress() {
+        $page_title = 'Thêm địa chỉ - ShopPink';
+        
         Auth::requireCustomer();
         
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $userId = Auth::id();
             $data = [
+                'user_id' => Auth::id(),
                 'recipient_name' => $_POST['recipient_name'] ?? '',
                 'phone' => $_POST['phone'] ?? '',
                 'address' => $_POST['address'] ?? '',
@@ -446,24 +393,24 @@ class UserController {
                 'is_default' => isset($_POST['is_default'])
             ];
             
-            if ($data['is_default']) {
-                // Bỏ mặc định tất cả các địa chỉ khác
-                $this->userModel->unsetDefaultAddresses($userId);
-            }
-            
-            if ($this->userModel->addAddress($userId, $data)) {
+            if ($this->userModel->addAddress($data)) {
                 $_SESSION['success'] = 'Thêm địa chỉ thành công!';
+                header('Location: /addresses');
+                exit;
             } else {
                 $_SESSION['error'] = 'Thêm địa chỉ thất bại!';
             }
         }
         
-        header('Location: /addresses');
-        exit;
+        include BASE_PATH . '/views/layouts/header.php';
+        include BASE_PATH . '/views/user/add_address.php';
+        include BASE_PATH . '/views/layouts/footer.php';
     }
     
     // Sửa địa chỉ
     public function editAddress($id) {
+        $page_title = 'Sửa địa chỉ - ShopPink';
+        
         Auth::requireCustomer();
         
         $address = $this->userModel->getAddressById($id);
@@ -474,8 +421,8 @@ class UserController {
         }
         
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $userId = Auth::id();
             $data = [
+                'user_id' => Auth::id(),
                 'recipient_name' => $_POST['recipient_name'] ?? '',
                 'phone' => $_POST['phone'] ?? '',
                 'address' => $_POST['address'] ?? '',
@@ -485,19 +432,13 @@ class UserController {
                 'is_default' => isset($_POST['is_default'])
             ];
             
-            if ($data['is_default']) {
-                // Bỏ mặc định tất cả các địa chỉ khác
-                $this->userModel->unsetDefaultAddresses($userId);
-            }
-            
             if ($this->userModel->updateAddress($id, $data)) {
                 $_SESSION['success'] = 'Cập nhật địa chỉ thành công!';
+                header('Location: /addresses');
+                exit;
             } else {
                 $_SESSION['error'] = 'Cập nhật địa chỉ thất bại!';
             }
-            
-            header('Location: /addresses');
-            exit;
         }
         
         include BASE_PATH . '/views/layouts/header.php';
@@ -532,19 +473,13 @@ class UserController {
         $address = $this->userModel->getAddressById($id);
         
         if ($address && $address['user_id'] == Auth::id()) {
-            $userId = Auth::id();
-            
-            // Bỏ mặc định tất cả các địa chỉ khác
-            $this->userModel->unsetDefaultAddresses($userId);
-            
-            // Đặt địa chỉ này làm mặc định
-            if ($this->userModel->setDefaultAddress($id)) {
-                $_SESSION['success'] = 'Cập nhật địa chỉ mặc định thành công!';
+            if ($this->userModel->setDefaultAddress($id, Auth::id())) {
+                $_SESSION['success'] = 'Đã đặt địa chỉ mặc định!';
             } else {
-                $_SESSION['error'] = 'Cập nhật địa chỉ mặc định thất bại!';
+                $_SESSION['error'] = 'Không thể đặt địa chỉ mặc định!';
             }
         } else {
-            $_SESSION['error'] = 'Không thể cập nhật địa chỉ mặc định!';
+            $_SESSION['error'] = 'Không thể đặt địa chỉ mặc định!';
         }
         
         header('Location: /addresses');
@@ -553,6 +488,8 @@ class UserController {
     
     // Danh sách yêu thích
     public function wishlist() {
+        $page_title = 'Danh sách yêu thích - ShopPink';
+        
         Auth::requireCustomer();
         
         $wishlist = $this->userModel->getWishlist(Auth::id());
@@ -566,22 +503,20 @@ class UserController {
     public function addToWishlist() {
         Auth::requireCustomer();
         
-        $productId = $_GET['id'] ?? 0;
+        $productId = $_POST['product_id'] ?? 0;
         
         if ($productId > 0) {
-            $product = $this->productModel->getById($productId);
-            
-            if ($product) {
+            if ($this->userModel->isInWishlist(Auth::id(), $productId)) {
+                $_SESSION['error'] = 'Sản phẩm đã có trong danh sách yêu thích!';
+            } else {
                 if ($this->userModel->addToWishlist(Auth::id(), $productId)) {
                     $_SESSION['success'] = 'Đã thêm vào danh sách yêu thích!';
                 } else {
-                    $_SESSION['error'] = 'Sản phẩm đã có trong danh sách yêu thích!';
+                    $_SESSION['error'] = 'Không thể thêm vào danh sách yêu thích!';
                 }
-            } else {
-                $_SESSION['error'] = 'Sản phẩm không tồn tại!';
             }
         } else {
-            $_SESSION['error'] = 'Dữ liệu không hợp lệ!';
+            $_SESSION['error'] = 'Không thể thêm vào danh sách yêu thích!';
         }
         
         header('Location: ' . $_SERVER['HTTP_REFERER']);
@@ -601,7 +536,7 @@ class UserController {
                 $_SESSION['error'] = 'Không thể xóa khỏi danh sách yêu thích!';
             }
         } else {
-            $_SESSION['error'] = 'Dữ liệu không hợp lệ!';
+            $_SESSION['error'] = 'Không thể xóa khỏi danh sách yêu thích!';
         }
         
         header('Location: ' . $_SERVER['HTTP_REFERER']);
@@ -610,11 +545,13 @@ class UserController {
     
     // Thông báo
     public function notifications() {
+        $page_title = 'Thông báo - ShopPink';
+        
         Auth::requireCustomer();
         
         $notifications = $this->userModel->getNotifications(Auth::id());
         
-        // Đánh dấu tất cả thông báo là đã đọc
+        // Đánh dấu tất cả thông báo đã đọc
         $this->userModel->markAllNotificationsAsRead(Auth::id());
         
         include BASE_PATH . '/views/layouts/header.php';
@@ -624,6 +561,8 @@ class UserController {
     
     // Lịch sử xem sản phẩm
     public function viewHistory() {
+        $page_title = 'Lịch sử xem sản phẩm - ShopPink';
+        
         Auth::requireCustomer();
         
         $viewHistory = $this->userModel->getViewHistory(Auth::id());
@@ -635,6 +574,8 @@ class UserController {
     
     // Voucher
     public function vouchers() {
+        $page_title = 'Voucher - ShopPink';
+        
         Auth::requireCustomer();
         
         $vouchers = $this->userModel->getVouchers(Auth::id());
@@ -648,59 +589,18 @@ class UserController {
     public function applyVoucher() {
         Auth::requireCustomer();
         
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $code = $_POST['voucher_code'] ?? '';
-            
-            if (!empty($code)) {
-                $voucher = $this->userModel->getVoucherByCode($code, Auth::id());
-                
-                if ($voucher) {
-                    echo json_encode([
-                        'success' => true,
-                        'voucher' => [
-                            'id' => $voucher['id'],
-                            'code' => $voucher['code'],
-                            'discount_type' => $voucher['discount_type'],
-                            'discount_value' => $voucher['discount_value'],
-                            'min_order_value' => $voucher['min_order_value'],
-                            'max_discount_amount' => $voucher['max_discount_amount']
-                        ]
-                    ]);
-                } else {
-                    echo json_encode([
-                        'success' => false,
-                        'message' => 'Mã voucher không hợp lệ hoặc đã hết hạn!'
-                    ]);
-                }
-            } else {
-                echo json_encode([
-                    'success' => false,
-                    'message' => 'Vui lòng nhập mã voucher!'
-                ]);
-            }
+        $code = $_POST['voucher_code'] ?? '';
+        
+        if (empty($code)) {
+            echo json_encode(['success' => false, 'message' => 'Vui lòng nhập mã voucher!']);
+            exit;
         }
         
+        // Kiểm tra voucher
+        // (Cần triển khai thêm)
+        
+        echo json_encode(['success' => false, 'message' => 'Mã voucher không hợp lệ hoặc đã hết hạn!']);
         exit;
-    }
-    
-    // Upload hình ảnh
-    private function uploadImage() {
-        if (isset($_FILES['avatar']) && $_FILES['avatar']['error'] == 0) {
-            $targetDir = 'assets/images/avatars/';
-            $fileName = time() . '_' . basename($_FILES['avatar']['name']);
-            $targetFile = $targetDir . $fileName;
-            
-            // Kiểm tra và tạo thư mục nếu chưa tồn tại
-            if (!file_exists($targetDir)) {
-                mkdir($targetDir, 0777, true);
-            }
-            
-            if (move_uploaded_file($_FILES['avatar']['tmp_name'], $targetFile)) {
-                return $targetFile;
-            }
-        }
-        
-        return null;
     }
 }
 ?>

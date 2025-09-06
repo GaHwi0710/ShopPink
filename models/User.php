@@ -1,6 +1,5 @@
 <?php
 require_once BASE_PATH . '/config/database.php';
-
 class User {
     private $conn;
     
@@ -31,7 +30,7 @@ class User {
             
             return false;
         } catch(PDOException $e) {
-            echo "Error: " . $e->getMessage();
+            error_log("Error in login: " . $e->getMessage());
             return false;
         }
     }
@@ -52,7 +51,7 @@ class User {
             
             return $stmt->execute();
         } catch(PDOException $e) {
-            echo "Error: " . $e->getMessage();
+            error_log("Error in create: " . $e->getMessage());
             return false;
         }
     }
@@ -67,7 +66,7 @@ class User {
             
             return $stmt->fetch(PDO::FETCH_ASSOC);
         } catch(PDOException $e) {
-            echo "Error: " . $e->getMessage();
+            error_log("Error in getById: " . $e->getMessage());
             return false;
         }
     }
@@ -82,7 +81,7 @@ class User {
             
             return $stmt->fetch(PDO::FETCH_ASSOC);
         } catch(PDOException $e) {
-            echo "Error: " . $e->getMessage();
+            error_log("Error in getByUsername: " . $e->getMessage());
             return false;
         }
     }
@@ -97,7 +96,7 @@ class User {
             
             return $stmt->fetch(PDO::FETCH_ASSOC);
         } catch(PDOException $e) {
-            echo "Error: " . $e->getMessage();
+            error_log("Error in getByEmail: " . $e->getMessage());
             return false;
         }
     }
@@ -118,7 +117,7 @@ class User {
             
             return $stmt->execute();
         } catch(PDOException $e) {
-            echo "Error: " . $e->getMessage();
+            error_log("Error in update: " . $e->getMessage());
             return false;
         }
     }
@@ -134,7 +133,7 @@ class User {
             
             return $stmt->execute();
         } catch(PDOException $e) {
-            echo "Error: " . $e->getMessage();
+            error_log("Error in changePassword: " . $e->getMessage());
             return false;
         }
     }
@@ -149,8 +148,23 @@ class User {
             
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch(PDOException $e) {
-            echo "Error: " . $e->getMessage();
+            error_log("Error in getAddresses: " . $e->getMessage());
             return [];
+        }
+    }
+    
+    // Lấy địa chỉ theo ID
+    public function getAddressById($id) {
+        try {
+            $query = "SELECT * FROM user_addresses WHERE id = :id";
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+            $stmt->execute();
+            
+            return $stmt->fetch(PDO::FETCH_ASSOC);
+        } catch(PDOException $e) {
+            error_log("Error in getAddressById: " . $e->getMessage());
+            return false;
         }
     }
     
@@ -164,7 +178,7 @@ class User {
             
             return $stmt->fetch(PDO::FETCH_ASSOC);
         } catch(PDOException $e) {
-            echo "Error: " . $e->getMessage();
+            error_log("Error in getDefaultAddress: " . $e->getMessage());
             return false;
         }
     }
@@ -194,7 +208,7 @@ class User {
             
             return $stmt->execute();
         } catch(PDOException $e) {
-            echo "Error: " . $e->getMessage();
+            error_log("Error in addAddress: " . $e->getMessage());
             return false;
         }
     }
@@ -231,7 +245,7 @@ class User {
             
             return $stmt->execute();
         } catch(PDOException $e) {
-            echo "Error: " . $e->getMessage();
+            error_log("Error in updateAddress: " . $e->getMessage());
             return false;
         }
     }
@@ -245,7 +259,7 @@ class User {
             
             return $stmt->execute();
         } catch(PDOException $e) {
-            echo "Error: " . $e->getMessage();
+            error_log("Error in deleteAddress: " . $e->getMessage());
             return false;
         }
     }
@@ -266,7 +280,7 @@ class User {
             
             return $stmt->execute();
         } catch(PDOException $e) {
-            echo "Error: " . $e->getMessage();
+            error_log("Error in setDefaultAddress: " . $e->getMessage());
             return false;
         }
     }
@@ -285,7 +299,7 @@ class User {
             
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch(PDOException $e) {
-            echo "Error: " . $e->getMessage();
+            error_log("Error in getWishlist: " . $e->getMessage());
             return [];
         }
     }
@@ -303,7 +317,7 @@ class User {
             $result = $stmt->fetch(PDO::FETCH_ASSOC);
             return $result['count'] > 0;
         } catch(PDOException $e) {
-            echo "Error: " . $e->getMessage();
+            error_log("Error in isInWishlist: " . $e->getMessage());
             return false;
         }
     }
@@ -319,7 +333,7 @@ class User {
             
             return $stmt->execute();
         } catch(PDOException $e) {
-            echo "Error: " . $e->getMessage();
+            error_log("Error in addToWishlist: " . $e->getMessage());
             return false;
         }
     }
@@ -335,7 +349,7 @@ class User {
             
             return $stmt->execute();
         } catch(PDOException $e) {
-            echo "Error: " . $e->getMessage();
+            error_log("Error in removeFromWishlist: " . $e->getMessage());
             return false;
         }
     }
@@ -356,7 +370,7 @@ class User {
             
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch(PDOException $e) {
-            echo "Error: " . $e->getMessage();
+            error_log("Error in getVouchers: " . $e->getMessage());
             return [];
         }
     }
@@ -375,7 +389,7 @@ class User {
             
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch(PDOException $e) {
-            echo "Error: " . $e->getMessage();
+            error_log("Error in getNotifications: " . $e->getMessage());
             return [];
         }
     }
@@ -389,7 +403,7 @@ class User {
             
             return $stmt->execute();
         } catch(PDOException $e) {
-            echo "Error: " . $e->getMessage();
+            error_log("Error in markNotificationAsRead: " . $e->getMessage());
             return false;
         }
     }
@@ -403,7 +417,7 @@ class User {
             
             return $stmt->execute();
         } catch(PDOException $e) {
-            echo "Error: " . $e->getMessage();
+            error_log("Error in markAllNotificationsAsRead: " . $e->getMessage());
             return false;
         }
     }
@@ -420,7 +434,7 @@ class User {
             $result = $stmt->fetch(PDO::FETCH_ASSOC);
             return $result['count'];
         } catch(PDOException $e) {
-            echo "Error: " . $e->getMessage();
+            error_log("Error in countUnreadNotifications: " . $e->getMessage());
             return 0;
         }
     }
@@ -454,7 +468,7 @@ class User {
             
             return true;
         } catch(PDOException $e) {
-            echo "Error: " . $e->getMessage();
+            error_log("Error in addToViewHistory: " . $e->getMessage());
             return false;
         }
     }
@@ -475,7 +489,7 @@ class User {
             
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch(PDOException $e) {
-            echo "Error: " . $e->getMessage();
+            error_log("Error in getViewHistory: " . $e->getMessage());
             return [];
         }
     }

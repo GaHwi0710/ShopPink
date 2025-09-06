@@ -2,24 +2,25 @@
 require_once BASE_PATH . '/models/Product.php';
 require_once BASE_PATH . '/models/User.php';
 require_once BASE_PATH . '/models/Review.php';
-
-class ProductController {
-    private $productModel;
-    private $userModel;
-    private $reviewModel;
-    
-    public function __construct() {
-        $this->productModel = new Product();
-        $this->userModel = new User();
-        $this->reviewModel = new Review();
-    }
+    class ProductController {
+        private $productModel;
+        private $userModel;
+        private $reviewModel;
+        
+        public function __construct() {
+            $this->productModel = new Product();
+            $this->userModel = new User();
+            $this->reviewModel = new Review();
+        }
     
     // Trang chủ - hiển thị sản phẩm
-    public function index() {
+      public function index() {
         $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
         $limit = 12;
         $offset = ($page - 1) * $limit;
         $products = $this->productModel->getAll($limit, $offset);
+        
+        $page_title = 'Trang chủ - ShopPink';
         
         include BASE_PATH . '/views/layouts/header.php';
         include BASE_PATH . '/views/products/index.php';
@@ -33,6 +34,9 @@ class ProductController {
         $limit = 12;
         $offset = ($page - 1) * $limit;
         $products = $this->productModel->search($keyword, $limit, $offset);
+        
+        // Thêm biến page_title
+        $page_title = 'Kết quả tìm kiếm - ShopPink';
         
         include BASE_PATH . '/views/layouts/header.php';
         include BASE_PATH . '/views/products/search.php';
@@ -56,6 +60,9 @@ class ProductController {
         if (Auth::check()) {
             $this->userModel->addToViewHistory(Auth::id(), $id);
         }
+        
+        // Thêm biến page_title
+        $page_title = $product['name'] . ' - ShopPink';
         
         include BASE_PATH . '/views/layouts/header.php';
         include BASE_PATH . '/views/products/detail.php';

@@ -1,35 +1,20 @@
 <?php
+
 session_start();
 // Error reporting
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-// Define base path
+// Define base path and SITE_URL
 define('BASE_PATH', __DIR__);
-
-// Define SITE_URL
 $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
 $host = $_SERVER['HTTP_HOST'];
 $scriptName = $_SERVER['SCRIPT_NAME'];
 $path = str_replace(basename($scriptName), '', $scriptName);
 define('SITE_URL', $protocol . '://' . $host . $path);
 
-// Sửa lại để xử lý hash routing
-$url = '';
-if (isset($_GET['url'])) {
-    $url = $_GET['url'];
-} elseif (isset($_SERVER['REQUEST_URI'])) {
-    // Xử lý hash routing
-    $hash = parse_url($_SERVER['REQUEST_URI'], PHP_URL_FRAGMENT);
-    if ($hash) {
-        $url = $hash;
-    }
-}
+$url = isset($_GET['url']) && $_GET['url'] ? rtrim($_GET['url'], '/') : 'home';
 
-// Mặc định là home nếu không có URL
-if (empty($url)) {
-    $url = 'home';
-}
 // Load required files
 require_once BASE_PATH . '/config/database.php';
 require_once BASE_PATH . '/core/Auth.php';
@@ -53,7 +38,6 @@ spl_autoload_register(function ($class_name) {
 
 // Simple routing
 switch ($url) {
-// Dòng ~40-45
     case 'home':
         $controller = new ProductController();
         $controller->index();

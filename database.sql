@@ -1,6 +1,6 @@
 -- Tạo database
-CREATE DATABASE IF NOT EXISTS shoppink;
-USE shoppink;
+CREATE DATABASE IF NOT EXISTS ShopPink;
+USE ShopPink;
 
 -- Bảng Users
 CREATE TABLE users (

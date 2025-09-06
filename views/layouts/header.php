@@ -1,6 +1,7 @@
 <?php
-session_start();
-
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 // Định nghĩa hằng số SITE_URL nếu chưa được định nghĩa
 if (!defined('SITE_URL')) {
     // Xác định URL gốc của trang web
@@ -10,7 +11,6 @@ if (!defined('SITE_URL')) {
     $path = str_replace(basename($scriptName), '', $scriptName);
     define('SITE_URL', $protocol . '://' . $host . $path);
 }
-
 // Kiểm tra người dùng đã đăng nhập chưa
 if (!isset($_SESSION['user'])) {
     $loginUrl = '#login-modal';
@@ -42,7 +42,6 @@ if (!isset($_SESSION['user'])) {
 <div class="loading-screen" id="loading-screen">
     <div class="spinner"></div>
 </div>
-
 <!-- Header -->
 <header>
     <div class="container">
@@ -57,8 +56,8 @@ if (!isset($_SESSION['user'])) {
                     <a href="#wishlist-modal" class="modal-trigger" data-modal="wishlist-modal"><i class="fas fa-heart"></i> Yêu thích</a>
                     <a href="#cart-modal" class="modal-trigger" data-modal="cart-modal"><i class="fas fa-shopping-cart"></i> Giỏ hàng</a>
                 <?php else: ?>
-                    <a href="#login-modal" class="modal-trigger" data-modal="login-modal"><i class="fas fa-user"></i> Tài khoản</a>
-                    <a href="#register-modal" class="modal-trigger" data-modal="register-modal"><i class="fas fa-user-plus"></i> Đăng ký</a>
+                    <a href="<?php echo $loginUrl; ?>" class="modal-trigger" data-modal="login-modal"><i class="fas fa-user"></i> Tài khoản</a>
+                    <a href="<?php echo $registerUrl; ?>" class="modal-trigger" data-modal="register-modal"><i class="fas fa-user-plus"></i> Đăng ký</a>
                     <a href="#cart-modal" class="modal-trigger" data-modal="cart-modal"><i class="fas fa-shopping-cart"></i> Giỏ hàng</a>
                 <?php endif; ?>
             </div>
@@ -109,15 +108,15 @@ if (!isset($_SESSION['user'])) {
                                 <a href="<?php echo SITE_URL; ?>/seller/revenue"><i class="fas fa-chart-line"></i> Doanh thu</a>
                                 <a href="<?php echo SITE_URL; ?>/seller/settings"><i class="fas fa-cog"></i> Cài đặt</a>
                             <?php endif; ?>
-                            <a href="<?php echo SITE_URL; ?>/logout"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a>
+                            <a href="<?php echo $loginUrl; ?>"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a>
                         </div>
                     </div>
                 <?php else: ?>
-                    <a href="#login-modal" class="modal-trigger" data-modal="login-modal" id="login-btn">
+                    <a href="<?php echo $loginUrl; ?>" class="modal-trigger" data-modal="login-modal" id="login-btn">
                         <i class="fas fa-user"></i> 
                         <span>Đăng nhập</span>
                     </a>
-                    <a href="#register-modal" class="modal-trigger" data-modal="register-modal">
+                    <a href="<?php echo $registerUrl; ?>" class="modal-trigger" data-modal="register-modal">
                         <i class="fas fa-user-plus"></i> 
                         <span>Đăng ký</span>
                     </a>
@@ -204,7 +203,6 @@ if (!isset($_SESSION['user'])) {
         </div>
     </nav>
 </header>
-
 <!-- Login Modal -->
 <div class="modal" id="login-modal">
     <div class="modal-content">
@@ -215,13 +213,13 @@ if (!isset($_SESSION['user'])) {
         
         <form id="login-form" action="<?php echo SITE_URL; ?>/login" method="POST">
             <div class="form-group">
-                <label for="username">Tên đăng nhập</label>
-                <input type="text" id="username" name="username" placeholder="Nhập tên đăng nhập" required>
+                <label for="login-username">Tên đăng nhập</label>
+                <input type="text" id="login-username" name="username" placeholder="Nhập tên đăng nhập" required>
             </div>
             
             <div class="form-group">
-                <label for="password">Mật khẩu</label>
-                <input type="password" id="password" name="password" placeholder="Nhập mật khẩu" required>
+                <label for="login-password">Mật khẩu</label>
+                <input type="password" id="login-password" name="password" placeholder="Nhập mật khẩu" required>
             </div>
             
             <div class="form-group">
@@ -248,7 +246,6 @@ if (!isset($_SESSION['user'])) {
         </div>
     </div>
 </div>
-
 <!-- Register Modal -->
 <div class="modal" id="register-modal">
     <div class="modal-content">
@@ -264,8 +261,8 @@ if (!isset($_SESSION['user'])) {
             </div>
             
             <div class="form-group">
-                <label for="username">Tên đăng nhập</label>
-                <input type="text" id="username" name="username" placeholder="Nhập tên đăng nhập" required>
+                <label for="register-username">Tên đăng nhập</label>
+                <input type="text" id="register-username" name="username" placeholder="Nhập tên đăng nhập" required>
             </div>
             
             <div class="form-group">
@@ -284,8 +281,8 @@ if (!isset($_SESSION['user'])) {
             </div>
             
             <div class="form-group">
-                <label for="password">Mật khẩu</label>
-                <input type="password" id="password" name="password" placeholder="Nhập mật khẩu" required>
+                <label for="register-password">Mật khẩu</label>
+                <input type="password" id="register-password" name="password" placeholder="Nhập mật khẩu" required>
             </div>
             
             <div class="form-group">
@@ -320,7 +317,6 @@ if (!isset($_SESSION['user'])) {
         </div>
     </div>
 </div>
-
 <!-- Cart Modal -->
 <div class="modal cart-modal" id="cart-modal">
     <div class="modal-content">
@@ -360,14 +356,13 @@ if (!isset($_SESSION['user'])) {
             <?php if (isset($_SESSION['user']) && $_SESSION['user']['role'] === 'customer'): ?>
                 <a href="<?php echo SITE_URL; ?>/checkout" class="btn-primary checkout-btn">Tiến hành thanh toán</a>
             <?php else: ?>
-                <a href="#login-modal" class="modal-trigger btn-primary checkout-btn" data-modal="login-modal">Đăng nhập để thanh toán</a>
+                <a href="<?php echo $loginUrl; ?>" class="modal-trigger btn-primary checkout-btn" data-modal="login-modal">Đăng nhập để thanh toán</a>
             <?php endif; ?>
             
             <a href="<?php echo SITE_URL; ?>/" class="continue-shopping">Tiếp tục mua sắm</a>
         </div>
     </div>
 </div>
-
 <!-- Wishlist Modal -->
 <div class="modal" id="wishlist-modal">
     <div class="modal-content">
@@ -379,7 +374,6 @@ if (!isset($_SESSION['user'])) {
         </div>
     </div>
 </div>
-
 <!-- Notification Modal -->
 <div class="modal" id="notification-modal">
     <div class="modal-content">
@@ -391,7 +385,6 @@ if (!isset($_SESSION['user'])) {
         </div>
     </div>
 </div>
-
 <!-- Voucher Modal -->
 <div class="modal" id="voucher-modal">
     <div class="modal-content">
@@ -403,7 +396,6 @@ if (!isset($_SESSION['user'])) {
         </div>
     </div>
 </div>
-
 <!-- Quick View Modal -->
 <div class="modal quick-view-modal" id="quick-view-modal">
     <div class="modal-content">
@@ -413,7 +405,6 @@ if (!isset($_SESSION['user'])) {
         </div>
     </div>
 </div>
-
 <!-- Display messages -->
 <?php if (isset($_SESSION['success'])): ?>
     <div class="alert alert-success">

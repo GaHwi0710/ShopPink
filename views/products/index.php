@@ -204,7 +204,7 @@
     <h2 class="section-title animate-on-scroll">Thương hiệu nổi bật</h2>
     <div class="brands-slider owl-carousel animate-on-scroll">
         <div class="brand-item">
-            <img src="https://via.placeholder.com/150x80/f8bbd0/ffffff?text=Brand+1" alt="Brand 1">
+            <img src="images/products/aothun.png" alt="Brand 1">
         </div>
         <div class="brand-item">
             <img src="https://via.placeholder.com/150x80/e91e63/ffffff?text=Brand+2" alt="Brand 2">
