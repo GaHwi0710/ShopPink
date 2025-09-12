@@ -222,7 +222,8 @@ h4 {
     <?php foreach ($order_details as $item): ?>
         <div class="order-item">
             <div class="item-image cart-product-image">
-                <img src="assets/images/products/<?php echo htmlspecialchars($product['image']); ?>" alt="<?php echo htmlspecialchars($product['name']); ?>"> 
+                <img src="assets/images/products/<?php echo htmlspecialchars($item['product_image']); ?>" 
+                    alt="<?php echo htmlspecialchars($item['product_name']); ?>">
             </div>
             <div class="item-info">
                 <h5><?php echo htmlspecialchars($item['product_name']); ?></h5>

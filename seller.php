@@ -294,7 +294,7 @@ $user_role = $is_logged_in ? $_SESSION['user_role'] : '';
                                     <input type="number" id="price" name="price" min="0" step="1000" required>
                                 </div>
                                 <div class="form-group">
-                                    <label for="stock">Tồn kho</label>
+                                    <label for="stock">Số Lượng Hàng</label>
                                     <input type="number" id="stock" name="stock" min="0" required>
                                 </div>
                                 <div class="form-group">
@@ -335,7 +335,7 @@ $user_role = $is_logged_in ? $_SESSION['user_role'] : '';
                                         <input type="number" id="edit_price" name="price" min="0" step="1000" value="<?php echo $edit_product['price']; ?>" required>
                                     </div>
                                     <div class="form-group">
-                                        <label for="edit_stock">Tồn kho</label>
+                                        <label for="edit_stock">Số Lượng</label>
                                         <input type="number" id="edit_stock" name="stock" min="0" value="<?php echo $edit_product['stock']; ?>" required>
                                     </div>
                                     <div class="form-group">
@@ -374,7 +374,7 @@ $user_role = $is_logged_in ? $_SESSION['user_role'] : '';
                                         <th>Tên sản phẩm</th>
                                         <th>Danh mục</th>
                                         <th>Giá</th>
-                                        <th>Tồn kho</th>
+                                        <th>Số Lượng Hàng</th>
                                         <th>Hành động</th>
                                     </tr>
                                 </thead>
