@@ -35,7 +35,7 @@ if (isset($_POST['add_product'])) {
         if (in_array($file_ext, $allowed_extensions)) {
             // Tạo tên file mới
             $new_file_name = uniqid() . '.' . $file_ext;
-            $upload_path = 'assets/assets/images/products/' . $new_file_name;
+            $upload_path = 'assets/images/products/' . $new_file_name;
             
             // Di chuyển file đến thư mục đích
             if (move_uploaded_file($file_tmp, $upload_path)) {
@@ -94,7 +94,7 @@ if (isset($_POST['update_product'])) {
                 if (in_array($file_ext, $allowed_extensions)) {
                     // Tạo tên file mới
                     $new_file_name = uniqid() . '.' . $file_ext;
-                    $upload_path = 'assets/assets/images/products/' . $new_file_name;
+                    $upload_path = 'assets/images/products/' . $new_file_name;
                     
                     // Di chuyển file đến thư mục đích
                     if (move_uploaded_file($file_tmp, $upload_path)) {
@@ -104,8 +104,8 @@ if (isset($_POST['update_product'])) {
                         $old_image = $stmt->fetchColumn();
                         
                         // Xóa ảnh cũ nếu tồn tại
-                        if ($old_image && file_exists('assets/assets/images/products/' . $old_image)) {
-                            unlink('assets/assets/images/products/' . $old_image);
+                        if ($old_image && file_exists('assets/images/products/' . $old_image)) {
+                            unlink('assets/images/products/' . $old_image);
                         }
                         
                         $update_image = true;
@@ -154,10 +154,9 @@ if (isset($_GET['action']) && $_GET['action'] === 'delete_product' && isset($_GE
             $stmt->execute([$product_id]);
             
             // Xóa ảnh nếu tồn tại
-            if ($image && file_exists('assets/assets/images/products/' . $image)) {
-                unlink('assets/assets/images/products/' . $image);
-            }
-            
+            if ($old_image && file_exists('assets/images/products/' . $old_image)) {
+                    unlink('assets/images/products/' . $old_image);
+                }      
             $message = 'Xóa sản phẩm thành công';
             $message_type = 'success';
         } catch (PDOException $e) {
@@ -352,7 +351,7 @@ $user_role = $is_logged_in ? $_SESSION['user_role'] : '';
                                     <div class="form-group">
                                         <label for="edit_image">Hình ảnh</label>
                                         <div class="current-image">
-                                            <img src="assets/images/products/<?php echo htmlspecialchars($product['image']); ?>" alt="<?php echo htmlspecialchars($product['name']); ?>"> 
+                                            <img src="assets/images/products/<?php echo htmlspecialchars($edit_product['image']); ?>"alt="<?php echo htmlspecialchars($edit_product['name']); ?>">
                                             <p>Ảnh hiện tại</p>
                                         </div>
                                         <input type="file" id="edit_image" name="image" accept="image/*">
